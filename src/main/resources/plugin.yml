@@ -1,0 +1,49 @@
+name: RemmyChat
+version: '${project.version}'
+main: com.noximity.remmyChat.RemmyChat
+api-version: '1.21'
+depend: [PlaceholderAPI]
+softdepend: []
+authors: [matcldr]
+description: A professional chat plugin with MiniMessage support
+website: https://noximity.com
+
+commands:
+  remchat:
+    description: Main command for RemmyChat
+    usage: /remchat
+    aliases: [rc]
+    permission: remmychat.use
+
+  msg:
+    description: Send a private message to a player
+    usage: /msg <player> <message>
+    aliases: [tell, pm, whisper, w]
+    permission: remmychat.msg
+
+  reply:
+    description: Reply to the last player who messaged you
+    usage: /reply <message>
+    aliases: [r]
+    permission: remmychat.msg
+
+permissions:
+  remmychat.use:
+    description: Allows using the basic plugin commands
+    default: true
+
+  remmychat.msg:
+    description: Allows sending private messages
+    default: true
+
+  remmychat.admin:
+    description: Allows using administrative commands
+    default: op
+
+  remmychat.channel.local:
+    description: Allows using the local channel
+    default: true
+
+  remmychat.channel.staff:
+    description: Allows using the staff channel
+    default: op

@@ -1,0 +1,85 @@
+package com.noximity.remmyChat.commands;
+
+import com.noximity.remmyChat.RemmyChat;
+import com.noximity.remmyChat.models.ChatUser;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public class MessageCommand implements CommandExecutor, TabCompleter {
+
+    private final RemmyChat plugin;
+
+    public MessageCommand(RemmyChat plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"));
+            return true;
+        }
+
+        if (args.length < 2) {
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.msg-usage"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null || !target.isOnline()) {
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.player-not-found",
+                    Placeholder.parsed("player", args[0])));
+            return true;
+        }
+
+        if (target.equals(player)) {
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.cannot-message-self"));
+            return true;
+        }
+
+        StringBuilder messageBuilder = new StringBuilder();
+        for (int i = 1; i < args.length; i++) {
+            messageBuilder.append(args[i]).append(" ");
+        }
+        String message = messageBuilder.toString().trim();
+        player.sendMessage(plugin.getFormatService().formatSystemMessage("msg-to-format",
+                Placeholder.parsed("player", target.getName()),
+                Placeholder.parsed("message", message)));
+
+        target.sendMessage(plugin.getFormatService().formatSystemMessage("msg-from-format",
+                Placeholder.parsed("player", player.getName()),
+                Placeholder.parsed("message", message)));
+
+        ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
+        targetUser.setLastMessagedPlayer(player.getUniqueId());
+
+        ChatUser senderUser = plugin.getChatService().getChatUser(player.getUniqueId());
+        senderUser.setLastMessagedPlayer(target.getUniqueId());
+
+        return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 1) {
+            return Bukkit.getOnlinePlayers().stream()
+                    .filter(player -> !player.equals(sender) &&
+                            (args[0].isEmpty() || player.getName().toLowerCase().startsWith(args[0].toLowerCase())))
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+}

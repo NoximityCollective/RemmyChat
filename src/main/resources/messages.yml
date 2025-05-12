@@ -1,0 +1,30 @@
+# RemmyChat Messages Configuration
+# Use MiniMessage format for all messages: https://docs.adventure.kyori.net/minimessage/format.html
+
+# General messages
+plugin-reloaded: "<#5BC0DE>RemmyChat has been reloaded.</#5BC0DE>"
+current-channel: "<#778899>You are currently in channel: <#5BC0DE><channel></#5BC0DE></#778899>"
+channel-changed: "<#778899>You are now chatting in channel: <#5BC0DE><channel></#5BC0DE></#778899>"
+cooldown: "<#D0021B>Please wait <seconds> seconds before chatting again.</#D0021B>"
+
+# Private messages
+msg-to-format: "<#778899>To <#5BC0DE><player></#5BC0DE>: <#F8F9FA><message></#F8F9FA></#778899>"
+msg-from-format: "<#778899>From <#5BC0DE><player></#5BC0DE>: <#F8F9FA><message></#F8F9FA></#778899>"
+
+# Help messages
+help-header: "<#4A90E2>┌─── <#5BC0DE>RemmyChat Help</#5BC0DE> ───┐</#4A90E2>"
+help-channel: "<#5BC0DE>/remchat channel <name></#5BC0DE> <#778899>- Switch to a different channel</#778899>"
+help-reload: "<#5BC0DE>/remchat reload</#5BC0DE> <#778899>- Reload the plugin configuration</#778899>"
+help-footer: "<#4A90E2>└───────────────────┘</#4A90E2>"
+
+# Error messages
+error:
+  players-only: "<#D0021B>This command can only be used by players.</#D0021B>"
+  no-permission: "<#D0021B>You don't have permission to do this.</#D0021B>"
+  channel-not-found: "<#D0021B>Channel '<channel>' not found.</#D0021B>"
+  no-default-channel: "<#D0021B>No default channel configured.</#D0021B>"
+  player-not-found: "<#D0021B>Player not found.</#D0021B>"
+  cannot-message-self: "<#D0021B>You cannot message yourself.</#D0021B>"
+  msg-usage: "<#D0021B>Usage: /msg <player> <message></#D0021B>"
+  nobody-to-reply: "<#D0021B>You have nobody to reply to.</#D0021B>"
+  player-not-online: "<#D0021B>The player you were messaging is no longer online.</#D0021B>"

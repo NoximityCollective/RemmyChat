@@ -1,0 +1,52 @@
+# RemmyChat Configuration
+
+# Default chat channel
+default-channel: "global"
+
+# Chat features
+features:
+  format-hover: true
+  clickable-links: true
+  player-formatting: false  # Whether players can use MiniMessage formatting
+
+# Chat cooldown in seconds (0 to disable)
+chat-cooldown: 3
+
+# URL formatting options
+url-formatting:
+  # Whether URLs should be formatted as clickable links
+  enabled: true
+
+  # URL color (hex color code)
+  color: "#3498DB"
+
+  # Whether URLs should be underlined
+  underline: true
+
+  # Whether URLs should have hover text
+  hover: true
+
+  # Hover text to show when hovering over URLs (supports MiniMessage format)
+  hover-text: "<#AAAAAA>Click to open<reset>"
+
+# Channel configurations
+channels:
+  global:
+    format: "<hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
+    permission: "" # Empty means everyone can use
+    radius: -1 # -1 means global chat
+
+  local:
+    format: "<hover:show_text:'<#778899>Local Chat\n<#F8F9FA>Range: 100 blocks'><#5BC0DE>[Local]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
+    permission: "remmychat.channel.local"
+    radius: 100 # Chat radius in blocks
+
+  staff:
+    format: "<hover:show_text:'<#778899>Staff Chat\n<#F8F9FA>Private staff communication'><#F5A623>[Staff]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
+    permission: "remmychat.channel.staff"
+    radius: -1 # Global chat
+
+  trade:
+    format: "<hover:show_text:'<#778899>Trade Chat\n<#F8F9FA>For buying and selling items'><#7ED321>[Trade]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
+    permission: "remmychat.channel.trade"
+    radius: -1 # Global chat
