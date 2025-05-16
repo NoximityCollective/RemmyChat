@@ -3,7 +3,9 @@ package com.noximity.remmyChat.services;
 import com.noximity.remmyChat.RemmyChat;
 import com.noximity.remmyChat.models.ChatUser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,18 +19,25 @@ public class ChatService {
     }
 
     public ChatUser getChatUser(UUID uuid) {
-        return chatUsers.computeIfAbsent(uuid, id ->
-                new ChatUser(id, plugin.getConfigManager().getDefaultChannel().getName()));
+        return chatUsers.computeIfAbsent(uuid, id -> {
+            String defaultChannel = plugin.getConfigManager().getDefaultChannel().getName();
+            return plugin.getDatabaseManager().loadUserPreferences(id, defaultChannel);
+        });
     }
 
     public void createChatUser(UUID uuid) {
         if (!chatUsers.containsKey(uuid)) {
-            chatUsers.put(uuid, new ChatUser(uuid, plugin.getConfigManager().getDefaultChannel().getName()));
+            String defaultChannel = plugin.getConfigManager().getDefaultChannel().getName();
+            ChatUser user = plugin.getDatabaseManager().loadUserPreferences(uuid, defaultChannel);
+            chatUsers.put(uuid, user);
         }
     }
 
     public void removeChatUser(UUID uuid) {
-        chatUsers.remove(uuid);
+        if (chatUsers.containsKey(uuid)) {
+            plugin.getDatabaseManager().saveUserPreferences(chatUsers.get(uuid));
+            chatUsers.remove(uuid);
+        }
     }
 
     public boolean setChannel(UUID uuid, String channel) {
@@ -38,5 +47,22 @@ public class ChatService {
 
         getChatUser(uuid).setCurrentChannel(channel);
         return true;
+    }
+
+    public void saveAllUsers() {
+        List<ChatUser> users = new ArrayList<>(chatUsers.values());
+        for (ChatUser user : users) {
+            plugin.getDatabaseManager().saveUserPreferences(user);
+        }
+    }
+
+    public List<ChatUser> getSocialSpyUsers() {
+        List<ChatUser> spyUsers = new ArrayList<>();
+        for (ChatUser user : chatUsers.values()) {
+            if (user.isSocialSpy()) {
+                spyUsers.add(user);
+            }
+        }
+        return spyUsers;
     }
 }

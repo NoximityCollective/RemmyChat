@@ -27,6 +27,18 @@ commands:
     aliases: [r]
     permission: remmychat.msg
 
+  msgtoggle:
+    description: Toggle private messages on or off
+    usage: /msgtoggle
+    aliases: [togglemsg, togglepm]
+    permission: remmychat.msgtoggle
+
+  socialspy:
+    description: Toggle social spy mode to see private messages
+    usage: /socialspy
+    aliases: [msgspy, spy]
+    permission: remmychat.socialspy
+
 permissions:
   remmychat.use:
     description: Allows using the basic plugin commands
@@ -35,6 +47,18 @@ permissions:
   remmychat.msg:
     description: Allows sending private messages
     default: true
+
+  remmychat.msgtoggle:
+    description: Allows toggling private messages on/off
+    default: true
+
+  remmychat.msgtoggle.bypass:
+    description: Allows bypassing other players' message toggle
+    default: op
+
+  remmychat.socialspy:
+    description: Allows using the social spy feature
+    default: op
 
   remmychat.admin:
     description: Allows using administrative commands
