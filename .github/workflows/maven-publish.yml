@@ -2,9 +2,9 @@ name: Build and Release
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 env:
   BUILD_NUMBER: ${{ github.run_number }}
