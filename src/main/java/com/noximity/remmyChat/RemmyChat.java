@@ -2,9 +2,12 @@ package com.noximity.remmyChat;
 
 import com.noximity.remmyChat.commands.ChatCommand;
 import com.noximity.remmyChat.commands.MessageCommand;
+import com.noximity.remmyChat.commands.MsgToggleCommand;
 import com.noximity.remmyChat.commands.ReplyCommand;
+import com.noximity.remmyChat.commands.SocialSpyCommand;
 import com.noximity.remmyChat.config.ConfigManager;
 import com.noximity.remmyChat.config.Messages;
+import com.noximity.remmyChat.database.DatabaseManager;
 import com.noximity.remmyChat.listeners.ChatListener;
 import com.noximity.remmyChat.services.ChatService;
 import com.noximity.remmyChat.services.FormatService;
@@ -18,6 +21,7 @@ public final class RemmyChat extends JavaPlugin {
     private Messages messages;
     private ChatService chatService;
     private FormatService formatService;
+    private DatabaseManager databaseManager;
 
     @Override
     public void onEnable() {
@@ -25,6 +29,7 @@ public final class RemmyChat extends JavaPlugin {
 
         this.configManager = new ConfigManager(this);
         this.messages = new Messages(this);
+        this.databaseManager = new DatabaseManager(this);
 
         this.formatService = new FormatService(this);
         this.chatService = new ChatService(this);
@@ -32,11 +37,14 @@ public final class RemmyChat extends JavaPlugin {
         getCommand("remchat").setExecutor(new ChatCommand(this));
         getCommand("msg").setExecutor(new MessageCommand(this));
         getCommand("reply").setExecutor(new ReplyCommand(this));
+        getCommand("msgtoggle").setExecutor(new MsgToggleCommand(this));
+        getCommand("socialspy").setExecutor(new SocialSpyCommand(this));
 
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             getLogger().info("PlaceholderAPI found and hooked!");
+            new RemmyChatPlaceholders(this).register();
         } else {
             getLogger().warning("PlaceholderAPI not found! Placeholders will not work.");
         }
@@ -46,6 +54,16 @@ public final class RemmyChat extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Save all user data before shutdown
+        if (chatService != null) {
+            chatService.saveAllUsers();
+        }
+
+        // Close database connection
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
+
         getLogger().info("RemmyChat has been disabled!");
     }
 
@@ -67,5 +85,9 @@ public final class RemmyChat extends JavaPlugin {
 
     public FormatService getFormatService() {
         return formatService;
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }
