@@ -2,6 +2,7 @@ package com.noximity.remmyChat.commands;
 
 import com.noximity.remmyChat.RemmyChat;
 import com.noximity.remmyChat.models.ChatUser;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -49,6 +50,13 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
+        if (!targetUser.isMsgToggle() && !player.hasPermission("remmychat.msgtoggle.bypass")) {
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.player-messages-disabled",
+                    Placeholder.parsed("player", target.getName())));
+            return true;
+        }
+
         StringBuilder messageBuilder = new StringBuilder();
         for (int i = 1; i < args.length; i++) {
             messageBuilder.append(args[i]).append(" ");
@@ -62,7 +70,18 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
                 Placeholder.parsed("player", player.getName()),
                 Placeholder.parsed("message", message)));
 
-        ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
+        Component spyMessage = plugin.getFormatService().formatSystemMessage("socialspy-format",
+                Placeholder.parsed("sender", player.getName()),
+                Placeholder.parsed("receiver", target.getName()),
+                Placeholder.parsed("message", message));
+
+        for (ChatUser spyUser : plugin.getChatService().getSocialSpyUsers()) {
+            Player spy = plugin.getServer().getPlayer(spyUser.getUuid());
+            if (spy != null && spy.isOnline() && !spy.equals(player) && !spy.equals(target)) {
+                spy.sendMessage(spyMessage);
+            }
+        }
+
         targetUser.setLastMessagedPlayer(player.getUniqueId());
 
         ChatUser senderUser = plugin.getChatService().getChatUser(player.getUniqueId());
@@ -75,8 +94,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             return Bukkit.getOnlinePlayers().stream()
-                    .filter(player -> !player.equals(sender) &&
-                            (args[0].isEmpty() || player.getName().toLowerCase().startsWith(args[0].toLowerCase())))
+                    .filter(player -> args[0].isEmpty() || player.getName().toLowerCase().startsWith(args[0].toLowerCase()))
                     .map(Player::getName)
                     .collect(Collectors.toList());
         }

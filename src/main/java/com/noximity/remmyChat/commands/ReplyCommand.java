@@ -2,6 +2,7 @@ package com.noximity.remmyChat.commands;
 
 import com.noximity.remmyChat.RemmyChat;
 import com.noximity.remmyChat.models.ChatUser;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -28,7 +29,7 @@ public class ReplyCommand implements CommandExecutor {
         }
 
         if (args.length < 1) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.msg-usage"));
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.reply-usage"));
             return true;
         }
 
@@ -46,14 +47,18 @@ public class ReplyCommand implements CommandExecutor {
             return true;
         }
 
-        // Build message from args
+        ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
+        if (!targetUser.isMsgToggle() && !player.hasPermission("remmychat.msgtoggle.bypass")) {
+            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.player-messages-disabled",
+                    Placeholder.parsed("player", target.getName())));
+            return true;
+        }
+
         StringBuilder messageBuilder = new StringBuilder();
         for (String arg : args) {
             messageBuilder.append(arg).append(" ");
         }
         String message = messageBuilder.toString().trim();
-
-        // Format and send messages
         player.sendMessage(plugin.getFormatService().formatSystemMessage("msg-to-format",
                 Placeholder.parsed("player", target.getName()),
                 Placeholder.parsed("message", message)));
@@ -62,8 +67,18 @@ public class ReplyCommand implements CommandExecutor {
                 Placeholder.parsed("player", player.getName()),
                 Placeholder.parsed("message", message)));
 
-        // Update last messaged player for the target
-        ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
+        Component spyMessage = plugin.getFormatService().formatSystemMessage("socialspy-format",
+                Placeholder.parsed("sender", player.getName()),
+                Placeholder.parsed("receiver", target.getName()),
+                Placeholder.parsed("message", message));
+
+        for (ChatUser spyUser : plugin.getChatService().getSocialSpyUsers()) {
+            Player spy = plugin.getServer().getPlayer(spyUser.getUuid());
+            if (spy != null && spy.isOnline() && !spy.equals(player) && !spy.equals(target)) {
+                spy.sendMessage(spyMessage);
+            }
+        }
+
         targetUser.setLastMessagedPlayer(player.getUniqueId());
 
         return true;
