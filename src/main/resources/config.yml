@@ -8,45 +8,91 @@ features:
   format-hover: true
   clickable-links: true
   player-formatting: false  # Whether players can use MiniMessage formatting
+  use-group-format: true    # Whether to use group-based formatting
 
 # Chat cooldown in seconds (0 to disable)
 chat-cooldown: 3
 
-# URL formatting options
+# URL formatting optionsxw
 url-formatting:
-  # Whether URLs should be formatted as clickable links
   enabled: true
-
-  # URL color (hex color code)
   color: "#3498DB"
-
-  # Whether URLs should be underlined
   underline: true
+  hover-text: "<#AAAAAA>Click to open"
 
-  # Whether URLs should have hover text
-  hover: true
+# Templates for reuse across formats
+templates:
+  # Hover templates that can be reused
+  hovers:
+    player-info: "<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8>%player_name%\n<#F8F9FA>Click to message"
+    local-chat: "<#778899>Local Chat\n<#F8F9FA>Range: 100 blocks"
+    staff-chat: "<#778899>Staff Chat\n<#F8F9FA>Private staff communication"
+    trade-chat: "<#778899>Trade Chat\n<#F8F9FA>For buying and selling items"
 
-  # Hover text to show when hovering over URLs (supports MiniMessage format)
-  hover-text: "<#AAAAAA>Click to open<reset>"
+  # Channel prefixes
+  channel-prefixes:
+    local: "<#5BC0DE>[Local]"
+    staff: "<#F5A623>[Staff]"
+    trade: "<#7ED321>[Trade]"
+
+  # Group prefixes
+  group-prefixes:
+    owner: "<red>[OWNER]</red>"
+    admin: "<#FF5733>[ADMIN]"
+    mod: "<#33FF57>[MOD]"
+    vip: "<#FFCC00>[VIP]"
+
+  # Name styles that can be applied to usernames
+  name-styles:
+    default: "<#4A90E2>%player_name%"
+    owner: "<bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold>"
+    admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
+    mod: "<underlined><color:#33CCFF>%player_name%</underlined>"
+    vip: "<rainbow>%player_name%</rainbow>"
+
+# Chat message structure - used for final assembly
+chat-format: "%channel_prefix%%group_prefix%%name%<#778899>: <#F8F9FA>%message%"
 
 # Channel configurations
 channels:
   global:
-    format: "<hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
     permission: "" # Empty means everyone can use
     radius: -1 # -1 means global chat
+    prefix: "" # No prefix for global
+    hover: "player-info" # References templates.hovers.player-info
 
   local:
-    format: "<hover:show_text:'<#778899>Local Chat\n<#F8F9FA>Range: 100 blocks'><#5BC0DE>[Local]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
     permission: "remmychat.channel.local"
     radius: 100 # Chat radius in blocks
+    prefix: "local" # References templates.channel-prefixes.local
+    hover: "local-chat" # References templates.hovers.local-chat
 
   staff:
-    format: "<hover:show_text:'<#778899>Staff Chat\n<#F8F9FA>Private staff communication'><#F5A623>[Staff]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
     permission: "remmychat.channel.staff"
     radius: -1 # Global chat
+    prefix: "staff" # References templates.channel-prefixes.staff
+    hover: "staff-chat" # References templates.hovers.staff-chat
 
   trade:
-    format: "<hover:show_text:'<#778899>Trade Chat\n<#F8F9FA>For buying and selling items'><#7ED321>[Trade]</hover> <hover:show_text:'<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8><player>\n<#F8F9FA>Click to message'><click:suggest_command:/msg <player> ><#4A90E2><displayname></click></hover><#778899>: <#F8F9FA><message>"
     permission: "remmychat.channel.trade"
     radius: -1 # Global chat
+    prefix: "trade" # References templates.channel-prefixes.trade
+    hover: "trade-chat" # References templates.hovers.trade-chat
+
+# Group-based name formatting - overrides default name style
+groups:
+  owner:
+    name-style: "owner" # References templates.name-styles.owner
+    prefix: "owner" # References templates.group-prefixes.owner
+
+  admin:
+    name-style: "admin" # References templates.name-styles.admin
+    prefix: "admin" # References templates.group-prefixes.admin
+
+  mod:
+    name-style: "mod" # References templates.name-styles.mod
+    prefix: "mod" # References templates.group-prefixes.mod
+
+  vip:
+    name-style: "vip" # References templates.name-styles.vip
+    prefix: "vip" # References templates.group-prefixes.vip
