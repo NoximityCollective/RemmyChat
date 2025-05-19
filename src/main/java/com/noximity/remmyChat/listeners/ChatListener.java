@@ -66,15 +66,19 @@ public class ChatListener implements Listener {
             chatUser.setCurrentChannel(currentChannel.getName());
         }
 
+        // Check permission for the channel
         if (currentChannel.getPermission() != null && !currentChannel.getPermission().isEmpty()
                 && !player.hasPermission(currentChannel.getPermission())) {
             player.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"));
             return;
         }
 
+        // Format the message
         Component formattedMessage = plugin.getFormatService().formatChatMessage(player, currentChannel.getName(), rawMessage);
 
+        // Determine who should receive the message
         if (currentChannel.getRadius() > 0) {
+            // Local radius-based chat - only players within radius receive the message
             for (Player recipient : plugin.getServer().getOnlinePlayers()) {
                 if (player.getWorld().equals(recipient.getWorld()) &&
                         player.getLocation().distance(recipient.getLocation()) <= currentChannel.getRadius()) {
@@ -82,20 +86,34 @@ public class ChatListener implements Listener {
                 }
             }
         } else {
-            plugin.getServer().sendMessage(formattedMessage);
+            // Global chat - only send to players in the same channel
+            for (Player recipient : plugin.getServer().getOnlinePlayers()) {
+                ChatUser recipientUser = plugin.getChatService().getChatUser(recipient.getUniqueId());
+                // Only send message if recipient is in the same channel
+                if (recipientUser.getCurrentChannel().equals(currentChannel.getName())) {
+                    recipient.sendMessage(formattedMessage);
+                }
+            }
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // This will now load the saved channel from the database
         plugin.getChatService().createChatUser(player.getUniqueId());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        // Save user preferences including channel before removing from cache
+        ChatUser user = plugin.getChatService().getChatUser(player.getUniqueId());
+        if (user != null) {
+            plugin.getDatabaseManager().saveUserPreferences(user);
+        }
         plugin.getChatService().removeChatUser(player.getUniqueId());
         cooldowns.remove(player.getUniqueId());
     }
 }
+
