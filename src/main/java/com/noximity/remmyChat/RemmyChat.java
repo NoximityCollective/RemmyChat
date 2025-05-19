@@ -11,6 +11,7 @@ import com.noximity.remmyChat.database.DatabaseManager;
 import com.noximity.remmyChat.listeners.ChatListener;
 import com.noximity.remmyChat.services.ChatService;
 import com.noximity.remmyChat.services.FormatService;
+import com.noximity.remmyChat.services.PermissionService;
 import com.noximity.remmyChat.utils.MessageUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,6 +23,7 @@ public final class RemmyChat extends JavaPlugin {
     private ChatService chatService;
     private FormatService formatService;
     private DatabaseManager databaseManager;
+    private PermissionService permissionService;
 
     @Override
     public void onEnable() {
@@ -31,6 +33,7 @@ public final class RemmyChat extends JavaPlugin {
         this.messages = new Messages(this);
         this.databaseManager = new DatabaseManager(this);
 
+        this.permissionService = new PermissionService(this);
         this.formatService = new FormatService(this);
         this.chatService = new ChatService(this);
 
@@ -54,12 +57,10 @@ public final class RemmyChat extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Save all user data before shutdown
         if (chatService != null) {
             chatService.saveAllUsers();
         }
 
-        // Close database connection
         if (databaseManager != null) {
             databaseManager.close();
         }
@@ -90,4 +91,9 @@ public final class RemmyChat extends JavaPlugin {
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
+
+    public PermissionService getPermissionService() {
+        return permissionService;
+    }
 }
+

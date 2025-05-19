@@ -51,8 +51,18 @@ public class RemmyChatPlaceholders extends PlaceholderExpansion {
         }
 
         if (params.equalsIgnoreCase("channel")) {
-            ChatUser user = plugin.getChatService().getChatUser(player.getUniqueId());
-            return user.getCurrentChannel();
+            if (player.isOnline()) {
+                ChatUser user = plugin.getChatService().getChatUser(player.getUniqueId());
+                return user.getCurrentChannel();
+            }
+            return plugin.getConfigManager().getDefaultChannel().getName();
+        }
+
+        if (params.equalsIgnoreCase("group") && plugin.getPermissionService().isLuckPermsHooked()) {
+            if (player.isOnline()) {
+                return plugin.getPermissionService().getPrimaryGroup(player.getPlayer());
+            }
+            return "";
         }
 
         return null;
