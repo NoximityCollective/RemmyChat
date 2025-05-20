@@ -21,6 +21,7 @@ public class ConfigManager {
     private final Map<String, String> nameStyleTemplates = new HashMap<>();
     private boolean urlFormattingEnabled;
     private boolean useGroupFormat;
+    private boolean allowSelfMessaging;
     private String chatFormat;
     private boolean debugEnabled;
     private boolean verboseStartup;
@@ -43,6 +44,7 @@ public class ConfigManager {
         loadGroupFormats();
         loadUrlFormatting();
         this.useGroupFormat = config.getBoolean("features.use-group-format", true);
+        this.allowSelfMessaging = config.getBoolean("features.allow-self-messaging", false);
         this.chatFormat = config.getString("chat-format", "%channel_prefix% %group_prefix%%name%: %message%");
     }
 
@@ -180,6 +182,7 @@ public class ConfigManager {
         loadGroupFormats();
         loadUrlFormatting();
         this.useGroupFormat = config.getBoolean("features.use-group-format", true);
+        this.allowSelfMessaging = config.getBoolean("features.allow-self-messaging", false);
         this.chatFormat = config.getString("chat-format", "%channel_prefix% %group_prefix%%name%: %message%");
 
         // Reload placeholders
@@ -249,5 +252,9 @@ public class ConfigManager {
 
     public boolean isDebugEnabled() {
         return debugEnabled;
+    }
+
+    public boolean isAllowSelfMessaging() {
+        return allowSelfMessaging;
     }
 }
