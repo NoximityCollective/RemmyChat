@@ -22,6 +22,8 @@ public class ConfigManager {
     private boolean urlFormattingEnabled;
     private boolean useGroupFormat;
     private String chatFormat;
+    private boolean debugEnabled;
+    private boolean verboseStartup;
 
     public ConfigManager(RemmyChat plugin) {
         this.plugin = plugin;
@@ -31,6 +33,11 @@ public class ConfigManager {
     private void loadConfig() {
         plugin.saveDefaultConfig();
         this.config = plugin.getConfig();
+
+        // Load debug settings first
+        this.debugEnabled = config.getBoolean("debug.enabled", false);
+        this.verboseStartup = !config.isSet("debug.verbose-startup") || config.getBoolean("debug.verbose-startup", true);
+
         loadTemplates();
         loadChannels();
         loadGroupFormats();
@@ -47,7 +54,9 @@ public class ConfigManager {
                 String template = hoversSection.getString(key);
                 if (template != null) {
                     hoverTemplates.put(key, template);
-                    plugin.getLogger().info("Loaded hover template: " + key);
+                    if (verboseStartup) {
+                        plugin.getLogger().info("Loaded hover template: " + key);
+                    }
                 }
             }
         }
@@ -59,7 +68,9 @@ public class ConfigManager {
                 String template = channelPrefixesSection.getString(key);
                 if (template != null) {
                     channelPrefixTemplates.put(key, template);
-                    plugin.getLogger().info("Loaded channel prefix template: " + key);
+                    if (verboseStartup) {
+                        plugin.getLogger().info("Loaded channel prefix template: " + key);
+                    }
                 }
             }
         }
@@ -71,7 +82,9 @@ public class ConfigManager {
                 String template = groupPrefixesSection.getString(key);
                 if (template != null) {
                     groupPrefixTemplates.put(key, template);
-                    plugin.getLogger().info("Loaded group prefix template: " + key);
+                    if (verboseStartup) {
+                        plugin.getLogger().info("Loaded group prefix template: " + key);
+                    }
                 }
             }
         }
@@ -83,7 +96,9 @@ public class ConfigManager {
                 String template = nameStylesSection.getString(key);
                 if (template != null) {
                     nameStyleTemplates.put(key, template);
-                    plugin.getLogger().info("Loaded name style template: " + key);
+                    if (verboseStartup) {
+                        plugin.getLogger().info("Loaded name style template: " + key);
+                    }
                 }
             }
         }
@@ -101,11 +116,14 @@ public class ConfigManager {
             double radius = channelsSection.getDouble(key + ".radius", -1);
             String prefix = channelsSection.getString(key + ".prefix", "");
             String hover = channelsSection.getString(key + ".hover", "player-info");
+            String displayName = channelsSection.getString(key + ".display-name", "");
 
-            Channel channel = new Channel(key, permission, radius, prefix, hover);
+            Channel channel = new Channel(key, permission, radius, prefix, hover, displayName);
             channels.put(key, channel);
 
-            plugin.getLogger().info("Loaded channel: " + key);
+            if (verboseStartup) {
+                plugin.getLogger().info("Loaded channel: " + key + (displayName.isEmpty() ? "" : " with display name: " + displayName));
+            }
         }
     }
 
@@ -119,11 +137,22 @@ public class ConfigManager {
         for (String key : groupsSection.getKeys(false)) {
             String nameStyle = groupsSection.getString(key + ".name-style", "default");
             String prefix = groupsSection.getString(key + ".prefix", "");
+            String format = groupsSection.getString(key + ".format", "");
 
-            GroupFormat groupFormat = new GroupFormat(key, nameStyle, prefix);
+            // Debug information
+            if (debugEnabled || verboseStartup) {
+                plugin.getLogger().info("Loading group format for " + key + ":");
+                plugin.getLogger().info("  - name-style: " + nameStyle);
+                plugin.getLogger().info("  - prefix: '" + prefix + "'");
+                plugin.getLogger().info("  - format: '" + format + "'");
+            }
+
+            GroupFormat groupFormat = new GroupFormat(key, nameStyle, prefix, format);
             groupFormats.put(key, groupFormat);
 
-            plugin.getLogger().info("Loaded group format: " + key);
+            if (verboseStartup) {
+                plugin.getLogger().info("Loaded group format: " + key);
+            }
         }
     }
 
@@ -134,18 +163,27 @@ public class ConfigManager {
     public void reloadConfig() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
+
+        // Reload debug settings first
+        this.debugEnabled = config.getBoolean("debug.enabled", false);
+        this.verboseStartup = !config.isSet("debug.verbose-startup") || config.getBoolean("debug.verbose-startup", true);
+
         channels.clear();
         groupFormats.clear();
         hoverTemplates.clear();
         channelPrefixTemplates.clear();
         groupPrefixTemplates.clear();
         nameStyleTemplates.clear();
+
         loadTemplates();
         loadChannels();
         loadGroupFormats();
         loadUrlFormatting();
         this.useGroupFormat = config.getBoolean("features.use-group-format", true);
         this.chatFormat = config.getString("chat-format", "%channel_prefix% %group_prefix%%name%: %message%");
+
+        // Reload placeholders
+        plugin.getPlaceholderManager().loadCustomPlaceholders();
     }
 
     public boolean isPlayerFormattingAllowed() {
@@ -208,5 +246,8 @@ public class ConfigManager {
     public int getCooldown() {
         return config.getInt("chat-cooldown", 0);
     }
-}
 
+    public boolean isDebugEnabled() {
+        return debugEnabled;
+    }
+}

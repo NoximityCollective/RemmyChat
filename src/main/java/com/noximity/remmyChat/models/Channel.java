@@ -7,13 +7,15 @@ public class Channel {
     private final double radius;
     private final String prefix;
     private final String hover;
+    private final String displayName;
 
-    public Channel(String name, String permission, double radius, String prefix, String hover) {
+    public Channel(String name, String permission, double radius, String prefix, String hover, String displayName) {
         this.name = name;
         this.permission = permission;
         this.radius = radius;
         this.prefix = prefix;
         this.hover = hover;
+        this.displayName = displayName;
     }
 
     public String getName() {
@@ -35,5 +37,12 @@ public class Channel {
     public String getHover() {
         return hover;
     }
-}
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public boolean hasDisplayName() {
+        return displayName != null && !displayName.isEmpty();
+    }
+}
