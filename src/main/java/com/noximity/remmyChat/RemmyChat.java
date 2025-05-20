@@ -13,6 +13,7 @@ import com.noximity.remmyChat.services.ChatService;
 import com.noximity.remmyChat.services.FormatService;
 import com.noximity.remmyChat.services.PermissionService;
 import com.noximity.remmyChat.utils.MessageUtils;
+import com.noximity.remmyChat.utils.PlaceholderManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RemmyChat extends JavaPlugin {
@@ -24,6 +25,7 @@ public final class RemmyChat extends JavaPlugin {
     private FormatService formatService;
     private DatabaseManager databaseManager;
     private PermissionService permissionService;
+    private PlaceholderManager placeholderManager;
 
     @Override
     public void onEnable() {
@@ -36,6 +38,7 @@ public final class RemmyChat extends JavaPlugin {
         this.permissionService = new PermissionService(this);
         this.formatService = new FormatService(this);
         this.chatService = new ChatService(this);
+        this.placeholderManager = new PlaceholderManager(this);
 
         getCommand("remchat").setExecutor(new ChatCommand(this));
         getCommand("msg").setExecutor(new MessageCommand(this));
@@ -95,5 +98,8 @@ public final class RemmyChat extends JavaPlugin {
     public PermissionService getPermissionService() {
         return permissionService;
     }
-}
 
+    public PlaceholderManager getPlaceholderManager() {
+        return placeholderManager;
+    }
+}
