@@ -3,6 +3,27 @@
 # Default chat channel
 default-channel: "global"
 
+# Debug settings
+debug:
+  enabled: false  # Set to true to enable debug logging
+  format-processing: false  # Log details about format processing
+  placeholder-resolution: false  # Log details about placeholder resolution
+  group-selection: false  # Log details about group selection
+  verbose-startup: false  # Set to false to hide startup loading messages
+
+# Custom placeholders that can be used in formats
+placeholders:
+  default-message: "<white>%message%</white>"
+  special-name: "<gradient:gold:yellow>%player_name%</gradient>"
+  owner-prefix: "<red>[OWNER]</red>"
+  owner-hover: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Special hover text!'>%owner-prefix%</hover></click>"
+  admin-prefix: "<red>[ADMIN]</red>"
+  admin-hover: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Hover text for Admins!'>%admin-prefix%</hover></click>"
+  mod-prefix: "<#33FF57>[MOD]</#33FF57>"
+  vip-prefix: "<#FFCC00>[VIP]</#FFCC00>"
+  gray-name: "<gray>%player_name%</gray>"
+  default-format: "%gray-name%: %default-message%"
+
 # Chat features
 features:
   format-hover: true
@@ -13,7 +34,7 @@ features:
 # Chat cooldown in seconds (0 to disable)
 chat-cooldown: 3
 
-# URL formatting optionsxw
+# URL formatting options
 url-formatting:
   enabled: true
   color: "#3498DB"
@@ -35,13 +56,6 @@ templates:
     staff: "<#F5A623>[Staff]"
     trade: "<#7ED321>[Trade]"
 
-  # Group prefixes
-  group-prefixes:
-    owner: "<red>[OWNER]</red>"
-    admin: "<#FF5733>[ADMIN]"
-    mod: "<#33FF57>[MOD]"
-    vip: "<#FFCC00>[VIP]"
-
   # Name styles that can be applied to usernames
   name-styles:
     default: "<#4A90E2>%player_name%"
@@ -50,8 +64,8 @@ templates:
     mod: "<underlined><color:#33CCFF>%player_name%</underlined>"
     vip: "<rainbow>%player_name%</rainbow>"
 
-# Chat message structure - used for final assembly
-chat-format: "%channel_prefix%%group_prefix%%name%<#778899>: <#F8F9FA>%message%"
+# Chat message structure - used for final assembly when no custom format is defined
+chat-format: "%channel_prefix% %group_prefix%%name%<#778899>: <#F8F9FA>%message%"
 
 # Channel configurations
 channels:
@@ -60,39 +74,52 @@ channels:
     radius: -1 # -1 means global chat
     prefix: "" # No prefix for global
     hover: "player-info" # References templates.hovers.player-info
+    display-name: "" # No display name for global chat
 
   local:
     permission: "remmychat.channel.local"
     radius: 100 # Chat radius in blocks
     prefix: "local" # References templates.channel-prefixes.local
     hover: "local-chat" # References templates.hovers.local-chat
+    display-name: "<gray>[Local]</gray>" # Display name shown in chat
 
   staff:
     permission: "remmychat.channel.staff"
     radius: -1 # Global chat
     prefix: "staff" # References templates.channel-prefixes.staff
     hover: "staff-chat" # References templates.hovers.staff-chat
+    display-name: "<gold>[Staff]</gold>" # Display name shown in chat
 
   trade:
     permission: "remmychat.channel.trade"
     radius: -1 # Global chat
     prefix: "trade" # References templates.channel-prefixes.trade
     hover: "trade-chat" # References templates.hovers.trade-chat
+    display-name: "<green>[Trade]</green>" # Display name shown in chat
 
-# Group-based name formatting - overrides default name style
+# Group-based formatting - can use name styles, prefixes, or completely custom formats
 groups:
   owner:
-    name-style: "owner" # References templates.name-styles.owner
-    prefix: "owner" # References templates.group-prefixes.owner
+    name-style: "owner"
+    prefix: ""
+    format: "%owner-hover% %special-name%: %default-message%"
 
   admin:
-    name-style: "admin" # References templates.name-styles.admin
-    prefix: "admin" # References templates.group-prefixes.admin
+    name-style: "admin"
+    prefix: ""
+    format: "%admin-hover% %player_name%: %default-message%"
 
   mod:
-    name-style: "mod" # References templates.name-styles.mod
-    prefix: "mod" # References templates.group-prefixes.mod
+    name-style: "mod"
+    prefix: ""
+    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Hover text for Mods!'>%mod-prefix%</hover></click> %player_name%: %default-message%"
 
   vip:
-    name-style: "vip" # References templates.name-styles.vip
-    prefix: "vip" # References templates.group-prefixes.vip
+    name-style: "vip"
+    prefix: ""
+    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'VIP Player'>%vip-prefix%</hover></click> %player_name%: %default-message%"
+
+  default:
+    name-style: "default"
+    prefix: ""
+    format: "%default-format%"
