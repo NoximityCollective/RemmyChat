@@ -30,6 +30,7 @@ features:
   clickable-links: true
   player-formatting: false  # Whether players can use MiniMessage formatting
   use-group-format: true    # Whether to use group-based formatting
+  allow-self-messaging: false  # Whether players can send messages to themselves
 
 # Chat cooldown in seconds (0 to disable)
 chat-cooldown: 3

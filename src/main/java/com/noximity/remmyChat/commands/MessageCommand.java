@@ -38,7 +38,19 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[0]);
+        // First try to get an exact match to prevent partial matches
+        Player target = null;
+        String targetName = args[0];
+
+        // Check for exact match first
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.getName().equalsIgnoreCase(targetName)) {
+                target = onlinePlayer;
+                break;
+            }
+        }
+
+        // If no exact match was found, show error
         if (target == null || !target.isOnline()) {
             player.sendMessage(plugin.getFormatService().formatSystemMessage("error.player-not-found",
                     Placeholder.parsed("player", args[0])));
@@ -46,8 +58,11 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
         }
 
         if (target.equals(player)) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.cannot-message-self"));
-            return true;
+            // Only block self-messaging if not allowed in config
+            if (!plugin.getConfigManager().isAllowSelfMessaging()) {
+                player.sendMessage(plugin.getFormatService().formatSystemMessage("error.cannot-message-self"));
+                return true;
+            }
         }
 
         ChatUser targetUser = plugin.getChatService().getChatUser(target.getUniqueId());
@@ -101,3 +116,4 @@ public class MessageCommand implements CommandExecutor, TabCompleter {
         return new ArrayList<>();
     }
 }
+
