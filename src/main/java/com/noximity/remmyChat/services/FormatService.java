@@ -333,6 +333,12 @@ public class FormatService {
 
     public Component formatSystemMessage(String path, TagResolver... placeholders) {
         String message = plugin.getMessages().getMessage(path);
+
+        // Skip empty messages completely by returning null
+        if (message == null || message.trim().isEmpty()) {
+            return null;
+        }
+
         try {
             return miniMessage.deserialize(message, TagResolver.resolver(placeholders));
         } catch (Exception e) {

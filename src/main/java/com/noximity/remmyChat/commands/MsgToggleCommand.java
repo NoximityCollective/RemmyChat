@@ -2,6 +2,7 @@ package com.noximity.remmyChat.commands;
 
 import com.noximity.remmyChat.RemmyChat;
 import com.noximity.remmyChat.models.ChatUser;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,9 +32,15 @@ public class MsgToggleCommand implements CommandExecutor {
         plugin.getDatabaseManager().saveUserPreferences(chatUser);
 
         if (newState) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("msgtoggle-enabled"));
+            Component message = plugin.getFormatService().formatSystemMessage("msgtoggle-enabled");
+            if (message != null) {
+                player.sendMessage(message);
+            }
         } else {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("msgtoggle-disabled"));
+            Component message = plugin.getFormatService().formatSystemMessage("msgtoggle-disabled");
+            if (message != null) {
+                player.sendMessage(message);
+            }
         }
 
         return true;
