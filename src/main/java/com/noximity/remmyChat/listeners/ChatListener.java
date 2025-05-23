@@ -76,6 +76,10 @@ public class ChatListener implements Listener {
         // Format the message
         Component formattedMessage = plugin.getFormatService().formatChatMessage(player, currentChannel.getName(), rawMessage);
 
+        // Log the message to console
+        String plainMessage = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(formattedMessage);
+        plugin.getLogger().info(plainMessage);
+
         // Determine who should receive the message
         if (currentChannel.getRadius() > 0) {
             // Local radius-based chat - only players within radius receive the message
