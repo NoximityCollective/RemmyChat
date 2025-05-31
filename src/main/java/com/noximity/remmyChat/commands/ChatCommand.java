@@ -26,20 +26,33 @@ public class ChatCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"));
-            return true;
-        }
-
         if (args.length == 0) {
-            sendHelpMessage(player);
+            if (sender instanceof Player player) {
+                sendHelpMessage(player);
+            } else {
+                sender.sendMessage("RemmyChat Commands:");
+                sender.sendMessage("/remchat reload - Reload the plugin configuration");
+            }
             return true;
         }
 
         switch (args[0].toLowerCase()) {
-            case "channel", "ch" -> handleChannelCommand(player, args);
-            case "reload" -> handleReloadCommand(player);
-            default -> sendHelpMessage(player);
+            case "channel", "ch" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"));
+                    return true;
+                }
+                handleChannelCommand(player, args);
+            }
+            case "reload" -> handleReloadCommand(sender);
+            default -> {
+                if (sender instanceof Player player) {
+                    sendHelpMessage(player);
+                } else {
+                    sender.sendMessage("RemmyChat Commands:");
+                    sender.sendMessage("/remchat reload - Reload the plugin configuration");
+                }
+            }
         }
 
         return true;
@@ -75,15 +88,15 @@ public class ChatCommand implements CommandExecutor, TabCompleter {
                 Placeholder.parsed("channel", channelName)));
     }
 
-    private void handleReloadCommand(Player player) {
-        if (!player.hasPermission("remmychat.admin")) {
+    private void handleReloadCommand(CommandSender sender) {
+        if (sender instanceof Player player && !player.hasPermission("remmychat.admin")) {
             player.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"));
             return;
         }
 
         plugin.getConfigManager().reloadConfig();
         plugin.getMessages().reloadMessages();
-        player.sendMessage(plugin.getFormatService().formatSystemMessage("plugin-reloaded"));
+        sender.sendMessage(plugin.getFormatService().formatSystemMessage("plugin-reloaded"));
     }
 
     private void sendHelpMessage(Player player) {
