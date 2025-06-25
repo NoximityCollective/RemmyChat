@@ -2,7 +2,7 @@
 
 **RemmyChat** is a lightweight, feature-rich chat management solution for PaperMC servers that enhances player communication with a clean, modern design.
 
-<img src="https://img.shields.io/badge/API-1.21-blue" alt="API Version"> <img src="https://img.shields.io/badge/Version-1.4.2-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License">
+<img src="https://img.shields.io/badge/API-1.21-blue" alt="API Version"> <img src="https://img.shields.io/badge/Version-1.4.4-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.6-aqua" alt="Supporterd MC Version">
 
 ## Overview
 
@@ -141,5 +141,5 @@ Whether you're running a small community server or a large network, RemmyChat of
 
 - **Website**: [noximity.com](https://noximity.com)  
 - **Issues & Feature Requests**: Please use our GitHub issues tracker
-- **Version**: 1.4.1
+- **Version**: 1.4.4
 - **License**: GPL-3.0

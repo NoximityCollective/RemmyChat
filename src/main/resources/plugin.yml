@@ -1,7 +1,7 @@
 name: RemmyChat
 version: '${project.version}'
 main: com.noximity.remmyChat.RemmyChat
-api-version: '1.21'
+api-version: '1.21.6'
 depend: []
 softdepend: [PlaceholderAPI, LuckPerms]
 authors: [matcldr]
