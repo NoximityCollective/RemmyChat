@@ -12,7 +12,6 @@ import com.noximity.remmyChat.listeners.ChatListener;
 import com.noximity.remmyChat.services.ChatService;
 import com.noximity.remmyChat.services.FormatService;
 import com.noximity.remmyChat.services.PermissionService;
-import com.noximity.remmyChat.utils.MessageUtils;
 import com.noximity.remmyChat.utils.PlaceholderManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
