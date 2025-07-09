@@ -25,6 +25,7 @@ public final class RemmyChat extends JavaPlugin {
     private DatabaseManager databaseManager;
     private PermissionService permissionService;
     private PlaceholderManager placeholderManager;
+    private boolean protocolLibEnabled = false;
 
     @Override
     public void onEnable() {
@@ -38,6 +39,15 @@ public final class RemmyChat extends JavaPlugin {
         this.formatService = new FormatService(this);
         this.chatService = new ChatService(this);
         this.placeholderManager = new PlaceholderManager(this);
+
+        // ProtocolLib detection
+        if (getServer().getPluginManager().getPlugin("ProtocolLib") != null) {
+            protocolLibEnabled = true;
+            debugLog("ProtocolLib found. Advanced message deletion enabled.");
+        } else {
+            protocolLibEnabled = false;
+            debugLog("ProtocolLib not found. Advanced message deletion disabled.");
+        }
 
         getCommand("remchat").setExecutor(new ChatCommand(this));
         getCommand("msg").setExecutor(new MessageCommand(this));
@@ -100,5 +110,15 @@ public final class RemmyChat extends JavaPlugin {
 
     public PlaceholderManager getPlaceholderManager() {
         return placeholderManager;
+    }
+
+    public boolean isProtocolLibEnabled() {
+        return protocolLibEnabled;
+    }
+
+    public void debugLog(String message) {
+        if (getConfig().getBoolean("debug.enabled", false)) {
+            getLogger().info("[DEBUG] " + message);
+        }
     }
 }

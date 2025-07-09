@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -75,14 +76,10 @@ public class ChatListener implements Listener {
 
         // Format the message
         Component formattedMessage = plugin.getFormatService().formatChatMessage(player, currentChannel.getName(), rawMessage);
-
         // Log the message to console
         String plainMessage = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(formattedMessage);
         plugin.getLogger().info(plainMessage);
-
-        // Determine who should receive the message
         if (currentChannel.getRadius() > 0) {
-            // Local radius-based chat - only players within radius receive the message
             for (Player recipient : plugin.getServer().getOnlinePlayers()) {
                 if (player.getWorld().equals(recipient.getWorld()) &&
                         player.getLocation().distance(recipient.getLocation()) <= currentChannel.getRadius()) {
@@ -90,10 +87,8 @@ public class ChatListener implements Listener {
                 }
             }
         } else {
-            // Global chat - only send to players in the same channel
             for (Player recipient : plugin.getServer().getOnlinePlayers()) {
                 ChatUser recipientUser = plugin.getChatService().getChatUser(recipient.getUniqueId());
-                // Only send message if recipient is in the same channel
                 if (recipientUser.getCurrentChannel().equals(currentChannel.getName())) {
                     recipient.sendMessage(formattedMessage);
                 }

@@ -17,14 +17,17 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.UUID;
 
 public class FormatService {
 
     private final RemmyChat plugin;
     private final MiniMessage miniMessage;
     private final Pattern urlPattern = Pattern.compile("(https?://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?)");
+    private static final Pattern SYMBOL_PATTERN = Pattern.compile("(?i):([a-z0-9_-]+):");
 
     public FormatService(RemmyChat plugin) {
         this.plugin = plugin;
@@ -64,10 +67,10 @@ public class FormatService {
             // Debug info for group selection
             if (debugGroupSelection) {
                 if (groupFormat != null) {
-                    plugin.getLogger().info("Using group format for player " + playerName + ": " + groupFormat.getName());
-                    plugin.getLogger().info("Format string: " + groupFormat.getFormat());
+                    plugin.debugLog("Using group format for player " + playerName + ": " + groupFormat.getName());
+                    plugin.debugLog("Format string: " + groupFormat.getFormat());
                 } else {
-                    plugin.getLogger().info("No group format found for player " + playerName);
+                    plugin.debugLog("No group format found for player " + playerName);
                 }
             }
 
@@ -77,14 +80,14 @@ public class FormatService {
                 String customFormat = groupFormat.getFormat();
 
                 if (debugFormatProcessing) {
-                    plugin.getLogger().info("Original format: " + customFormat);
+                    plugin.debugLog("Original format: " + customFormat);
                 }
 
                 // Important: First apply custom placeholders
                 customFormat = plugin.getPlaceholderManager().applyCustomPlaceholders(customFormat);
 
                 if (debugFormatProcessing) {
-                    plugin.getLogger().info("After custom placeholder processing: " + customFormat);
+                    plugin.debugLog("After custom placeholder processing: " + customFormat);
                 }
 
                 // Add the channel display name if it exists
@@ -102,7 +105,7 @@ public class FormatService {
                 customFormat = customFormat.replace("%message%", "<message>");
 
                 if (debugFormatProcessing) {
-                    plugin.getLogger().info("Final format before deserialization: " + customFormat);
+                    plugin.debugLog("Final format before deserialization: " + customFormat);
                 }
 
                 // Apply PAPI placeholders if available
@@ -256,6 +259,25 @@ public class FormatService {
     }
 
     private Component formatMessageContent(Player player, String message) {
+        // Symbol replacement using regex (case-insensitive, dashes/numbers allowed)
+        Map<String, String> symbols = plugin.getConfigManager().getSymbolMappings();
+        if (symbols != null && !symbols.isEmpty()) {
+            Matcher matcher = SYMBOL_PATTERN.matcher(message);
+            StringBuffer sb = new StringBuffer();
+            while (matcher.find()) {
+                String code = matcher.group();
+                String codeKey = code.toLowerCase();
+                String replacement = symbols.get(codeKey);
+                if (replacement != null) {
+                    matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+                } else {
+                    matcher.appendReplacement(sb, Matcher.quoteReplacement(code));
+                }
+            }
+            matcher.appendTail(sb);
+            message = sb.toString();
+        }
+
         List<String> urls = new ArrayList<>();
         List<Integer> startPositions = new ArrayList<>();
         List<Integer> endPositions = new ArrayList<>();

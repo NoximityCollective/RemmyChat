@@ -1,5 +1,6 @@
-# Maven build directory
-target/
+# Gradle build directories
+.gradle/
+build/
 
 # Compiled class files
 *.class
@@ -51,6 +52,3 @@ Thumbs.db
 
 # Local configuration file
 config.local.yml
-
-# Dependency reduced POM
-dependency-reduced-pom.xml

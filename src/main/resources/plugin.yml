@@ -1,9 +1,9 @@
 name: RemmyChat
 version: '${project.version}'
 main: com.noximity.remmyChat.RemmyChat
-api-version: '1.21.6'
+api-version: '1.21.7'
 depend: []
-softdepend: [PlaceholderAPI, LuckPerms]
+softdepend: [PlaceholderAPI, LuckPerms, ProtocolLib]
 authors: [matcldr]
 description: A professional chat plugin with MiniMessage support
 website: https://noximity.com #under construction

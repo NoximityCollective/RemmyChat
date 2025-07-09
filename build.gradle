@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.noximity'
+version = '1.4.5'
+archivesBaseName = 'remmychat'
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc-repo'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    maven {
+        name = 'placeholderapi'
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+    maven {
+        name = 'luckperms'
+        url = 'https://repo.lucko.me/'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'net.luckperms:api:5.4'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+}
+
+processResources {
+    inputs.property "version", project.version
+    filteringCharset = 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand project: project
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    // minimize()
+}
+
+jar {
+    enabled = false
+    dependsOn shadowJar
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+} 
