@@ -5,7 +5,9 @@ import com.noximity.remmyChat.models.Channel;
 import com.noximity.remmyChat.models.GroupFormat;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +27,7 @@ public class ConfigManager {
     private String chatFormat;
     private boolean debugEnabled;
     private boolean verboseStartup;
+    private final Map<String, String> symbolMappings = new HashMap<>();
 
     public ConfigManager(RemmyChat plugin) {
         this.plugin = plugin;
@@ -43,6 +46,7 @@ public class ConfigManager {
         loadChannels();
         loadGroupFormats();
         loadUrlFormatting();
+        loadSymbols();
         this.useGroupFormat = config.getBoolean("features.use-group-format", true);
         this.allowSelfMessaging = config.getBoolean("features.allow-self-messaging", false);
         this.chatFormat = config.getString("chat-format", "%channel_prefix% %group_prefix%%name%: %message%");
@@ -57,7 +61,7 @@ public class ConfigManager {
                 if (template != null) {
                     hoverTemplates.put(key, template);
                     if (verboseStartup) {
-                        plugin.getLogger().info("Loaded hover template: " + key);
+                        plugin.debugLog("Loaded hover template: " + key);
                     }
                 }
             }
@@ -71,7 +75,7 @@ public class ConfigManager {
                 if (template != null) {
                     channelPrefixTemplates.put(key, template);
                     if (verboseStartup) {
-                        plugin.getLogger().info("Loaded channel prefix template: " + key);
+                        plugin.debugLog("Loaded channel prefix template: " + key);
                     }
                 }
             }
@@ -85,7 +89,7 @@ public class ConfigManager {
                 if (template != null) {
                     groupPrefixTemplates.put(key, template);
                     if (verboseStartup) {
-                        plugin.getLogger().info("Loaded group prefix template: " + key);
+                        plugin.debugLog("Loaded group prefix template: " + key);
                     }
                 }
             }
@@ -99,7 +103,7 @@ public class ConfigManager {
                 if (template != null) {
                     nameStyleTemplates.put(key, template);
                     if (verboseStartup) {
-                        plugin.getLogger().info("Loaded name style template: " + key);
+                        plugin.debugLog("Loaded name style template: " + key);
                     }
                 }
             }
@@ -143,23 +147,41 @@ public class ConfigManager {
 
             // Debug information
             if (debugEnabled || verboseStartup) {
-                plugin.getLogger().info("Loading group format for " + key + ":");
-                plugin.getLogger().info("  - name-style: " + nameStyle);
-                plugin.getLogger().info("  - prefix: '" + prefix + "'");
-                plugin.getLogger().info("  - format: '" + format + "'");
+                plugin.debugLog("Loading group format for " + key + ":");
+                plugin.debugLog("  - name-style: " + nameStyle);
+                plugin.debugLog("  - prefix: '" + prefix + "'");
+                plugin.debugLog("  - format: '" + format + "'");
             }
 
             GroupFormat groupFormat = new GroupFormat(key, nameStyle, prefix, format);
             groupFormats.put(key, groupFormat);
 
             if (verboseStartup) {
-                plugin.getLogger().info("Loaded group format: " + key);
+                plugin.debugLog("Loaded group format: " + key);
             }
         }
     }
 
     private void loadUrlFormatting() {
         this.urlFormattingEnabled = config.getBoolean("url-formatting.enabled", true);
+    }
+
+    private void loadSymbols() {
+        symbolMappings.clear();
+        File symbolsFile = new File(plugin.getDataFolder(), "symbols.yml");
+        if (!symbolsFile.exists()) {
+            plugin.saveResource("symbols.yml", false);
+        }
+        FileConfiguration symbolsConfig = YamlConfiguration.loadConfiguration(symbolsFile);
+        if (symbolsConfig.isConfigurationSection("symbols")) {
+            ConfigurationSection section = symbolsConfig.getConfigurationSection("symbols");
+            for (String key : section.getKeys(false)) {
+                String value = section.getString(key);
+                if (value != null) {
+                    symbolMappings.put(key, value);
+                }
+            }
+        }
     }
 
     public void reloadConfig() {
@@ -176,11 +198,13 @@ public class ConfigManager {
         channelPrefixTemplates.clear();
         groupPrefixTemplates.clear();
         nameStyleTemplates.clear();
+        symbolMappings.clear();
 
         loadTemplates();
         loadChannels();
         loadGroupFormats();
         loadUrlFormatting();
+        loadSymbols();
         this.useGroupFormat = config.getBoolean("features.use-group-format", true);
         this.allowSelfMessaging = config.getBoolean("features.allow-self-messaging", false);
         this.chatFormat = config.getString("chat-format", "%channel_prefix% %group_prefix%%name%: %message%");
@@ -256,5 +280,25 @@ public class ConfigManager {
 
     public boolean isAllowSelfMessaging() {
         return allowSelfMessaging;
+    }
+
+    public Map<String, String> getSymbolMappings() {
+        return symbolMappings;
+    }
+
+    public String getDeleteButtonText() {
+        return config.getString("delete-button.text", "<red>❌</red>");
+    }
+
+    public String getDeleteButtonHover() {
+        return config.getString("delete-button.hover", "<gray>Delete this message</gray>");
+    }
+
+    public String getDeleteButtonClickMessage() {
+        return config.getString("delete-button.click-message", "<green>Message deleted!</green>");
+    }
+
+    public String getDeleteButtonSound() {
+        return config.getString("delete-button.sound", "");
     }
 }

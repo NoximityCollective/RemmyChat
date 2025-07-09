@@ -2,7 +2,7 @@
 
 **RemmyChat** is a lightweight, feature-rich chat management solution for PaperMC servers that enhances player communication with a clean, modern design.
 
-<img src="https://img.shields.io/badge/API-1.21-blue" alt="API Version"> <img src="https://img.shields.io/badge/Version-1.4.4-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.6-aqua" alt="Supporterd MC Version">
+<img src="https://img.shields.io/badge/Version-1.4.5-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.7-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation">
 
 ## Overview
 
@@ -36,6 +36,8 @@ Installation is straightforward:
 2. Place the JAR file in your server's `plugins` folder
 3. Restart your server
 4. Configuration files will be generated automatically
+
+For detailed setup instructions and advanced configuration, visit our [official documentation](https://remmychat.noximity.com).
 
 ## Configuration
 
@@ -139,7 +141,42 @@ Whether you're running a small community server or a large network, RemmyChat of
 
 ## Support & Development
 
+- **Documentation**: [remmychat.noximity.com](https://remmychat.noximity.com)
 - **Website**: [noximity.com](https://noximity.com)  
 - **Issues & Feature Requests**: Please use our GitHub issues tracker
-- **Version**: 1.4.4
+- **Version**: 1.4.5
 - **License**: GPL-3.0
+
+## Building with Gradle
+
+This project uses Gradle for building and requires Java 21 or higher.
+
+To build:
+
+```sh
+./gradlew build
+```
+
+The output JAR will be in the `build/libs` directory.
+
+## Symbols & Emoji Replacement
+
+RemmyChat supports custom symbols and emoji replacement in chat messages. You can define your own codes (like :smile:, :diamond:, etc.) and their replacements (emoji, text, or MiniMessage) in a separate `symbols.yml` file. This feature works with both Unicode emojis and custom resource pack textures.
+
+### How it works
+- Players can type codes like `:smile:` in chat.
+- The plugin will automatically replace these codes with whatever you configure in `symbols.yml`.
+- Supports case-insensitive codes and dashes (e.g., `:smile-face:`).
+- Works seamlessly with resource packs for custom textures and emojis.
+
+### Example `symbols.yml`
+```yaml
+symbols:
+  ":smile:": "😄"
+  ":diamond:": "<texture:diamond>"
+  ":heart:": "❤️"
+  ":star:": "⭐"
+  ":smile-face:": "😊"
+```
+
+You can add as many codes as you want. The replacement can be any string, emoji, or MiniMessage component. Resource pack textures will display correctly for players using the appropriate resource pack.
