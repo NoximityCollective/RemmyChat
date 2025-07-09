@@ -173,7 +173,6 @@ RemmyChat supports custom symbols and emoji replacement in chat messages. You ca
 ```yaml
 symbols:
   ":smile:": "😄"
-  ":diamond:": "<texture:diamond>"
   ":heart:": "❤️"
   ":star:": "⭐"
   ":smile-face:": "😊"
