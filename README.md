@@ -2,11 +2,13 @@
 
 **RemmyChat** is a lightweight, feature-rich chat management solution for PaperMC servers that enhances player communication with a clean, modern design.
 
-<img src="https://img.shields.io/badge/Version-1.4.5-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.7-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation">
+<img src="https://img.shields.io/badge/Version-1.4.5-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.7-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation"></a>
 
 ## Overview
 
 RemmyChat transforms your server's communication with a sleek, modern interface while providing powerful customization through MiniMessage formatting. From immersive proximity chat to comprehensive anti-spam features, RemmyChat balances simplicity with functionality to create the perfect chat experience.
+
+![Overview Image](https://cdn.modrinth.com/data/kcImu7Wi/images/75ae522ff749334639ce6184a3e2e22d92e9e991.jpeg)
 
 ## Features
 
@@ -28,6 +30,31 @@ RemmyChat transforms your server's communication with a sleek, modern interface 
 - **LuckPerms Integration** — Seamless permission management
 - **Optimized Performance** — Minimal resource usage even on busy servers
 
+![Features Image](https://cdn.modrinth.com/data/kcImu7Wi/images/1155be08ccbcc31c638d9daedcc38b8e581c200e.jpeg)
+
+## Symbols & Emoji Replacement
+
+RemmyChat supports custom symbols and emoji replacement in chat messages. You can define your own codes (like :smile:, :diamond:, etc.) and their replacements (emoji, text, or MiniMessage) in a separate `symbols.yml` file. This feature works with both Unicode emojis and custom resource pack textures.
+
+![Symbols GIF](https://cdn.modrinth.com/data/kcImu7Wi/images/fbf28197353848d8962d7f8d813a7836d850ad51.gif)
+
+### How it works
+- Players can type codes like `:smile:` in chat.
+- The plugin will automatically replace these codes with whatever you configure in `symbols.yml`.
+- Supports case-insensitive codes and dashes (e.g., `:smile-face:`).
+- Works seamlessly with resource packs for custom textures and emojis.
+
+### Example `symbols.yml`
+```yaml
+symbols:
+  ":smile:": "😄"
+  ":heart:": "❤️"
+  ":star:": "⭐"
+  ":smile-face:": "😊"
+```
+
+You can add as many codes as you want. The replacement can be any string, emoji, or MiniMessage component. Resource pack textures will display correctly for players using the appropriate resource pack.
+
 ## Getting Started
 
 Installation is straightforward:
@@ -38,6 +65,8 @@ Installation is straightforward:
 4. Configuration files will be generated automatically
 
 For detailed setup instructions and advanced configuration, visit our [official documentation](https://remmychat.noximity.com).
+
+![Getting Started Image](https://cdn.modrinth.com/data/kcImu7Wi/images/48e4546417fe67875a2507bde87e93be6a266198.jpeg)
 
 ## Configuration
 
@@ -100,6 +129,8 @@ templates:
     admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
 ```
 
+![Configuration Image](https://cdn.modrinth.com/data/kcImu7Wi/images/154da5ba69d238aab11a09bb1c795b9e76e24edc.jpeg)
+
 ## Commands
 
 | Command | Description | Permission |
@@ -133,21 +164,9 @@ RemmyChat automatically integrates with PlaceholderAPI if installed, allowing yo
 
 When LuckPerms is detected, RemmyChat can use permission groups for chat formatting, simplifying setup for servers with existing permission structures.
 
-## Why Choose RemmyChat?
+## For Developers
 
-RemmyChat stands out with its perfect balance of simplicity and functionality. The plugin is designed with both server administrators and players in mind - easy to configure yet highly customizable, with a beautiful interface that enhances communication while staying out of the way.
-
-Whether you're running a small community server or a large network, RemmyChat offers the flexibility, performance, and sleek design to elevate your chat experience.
-
-## Support & Development
-
-- **Documentation**: [remmychat.noximity.com](https://remmychat.noximity.com)
-- **Website**: [noximity.com](https://noximity.com)  
-- **Issues & Feature Requests**: Please use our GitHub issues tracker
-- **Version**: 1.4.5
-- **License**: GPL-3.0
-
-## Building with Gradle
+### Building with Gradle
 
 This project uses Gradle for building and requires Java 21 or higher.
 
@@ -159,23 +178,10 @@ To build:
 
 The output JAR will be in the `build/libs` directory.
 
-## Symbols & Emoji Replacement
+## Support & Development
 
-RemmyChat supports custom symbols and emoji replacement in chat messages. You can define your own codes (like :smile:, :diamond:, etc.) and their replacements (emoji, text, or MiniMessage) in a separate `symbols.yml` file. This feature works with both Unicode emojis and custom resource pack textures.
-
-### How it works
-- Players can type codes like `:smile:` in chat.
-- The plugin will automatically replace these codes with whatever you configure in `symbols.yml`.
-- Supports case-insensitive codes and dashes (e.g., `:smile-face:`).
-- Works seamlessly with resource packs for custom textures and emojis.
-
-### Example `symbols.yml`
-```yaml
-symbols:
-  ":smile:": "😄"
-  ":heart:": "❤️"
-  ":star:": "⭐"
-  ":smile-face:": "😊"
-```
-
-You can add as many codes as you want. The replacement can be any string, emoji, or MiniMessage component. Resource pack textures will display correctly for players using the appropriate resource pack.
+- **Documentation**: [remmychat.noximity.com](https://remmychat.noximity.com)
+- **Website**: [noximity.com](https://noximity.com)
+- **Issues & Feature Requests**: Please use our GitHub issues tracker
+- **Version**: 1.4.5
+- **License**: GPL-3.0
