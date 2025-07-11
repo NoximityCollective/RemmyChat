@@ -54,15 +54,15 @@ jobs:
       - name: Retrieve Project Name & Version
         id: project-info
         run: |
-          echo "projectName=$(./gradlew properties -q | grep '^archivesBaseName:' | awk '{print $2}')" >> $GITHUB_ENV
-          echo "projectVersion=$(./gradlew properties -q | grep '^version:' | awk '{print $2}')" >> $GITHUB_ENV
+          echo "projectName=$(./gradlew properties -q | grep '^archivesBaseName:' | awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "projectVersion=$(./gradlew properties -q | grep '^version:' | awk '{print $2}')" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: build-${{ github.run_number }}-${{ github.run_attempt }}
-          release_name: Release ${{ env.projectVersion }} build-${{ github.run_number }}-${{ github.run_attempt }}
+          release_name: Release ${{ steps.project-info.outputs.projectVersion }} build-${{ github.run_number }}-${{ github.run_attempt }}
           body: ${{ join(github.event.commits.*.message, ' || ') }}
 
       - name: Upload Release Asset
@@ -70,6 +70,6 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/libs/${{ env.projectName }}-${{ env.projectVersion }}.jar
-          asset_name: ${{ env.projectName }}-${{ env.projectVersion }}.jar
+          asset_path: build/libs/${{ steps.project-info.outputs.projectName }}-${{ steps.project-info.outputs.projectVersion }}.jar
+          asset_name: ${{ steps.project-info.outputs.projectName }}-${{ steps.project-info.outputs.projectVersion }}.jar
           asset_content_type: application/java-archive
