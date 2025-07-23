@@ -2,7 +2,7 @@
 
 **RemmyChat** is a lightweight, feature-rich chat management solution for PaperMC servers that enhances player communication with a clean, modern design.
 
-<img src="https://img.shields.io/badge/Version-1.4.5-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.7-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation"></a>
+<img src="https://img.shields.io/badge/Version-1.4.6-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.8-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation"></a>
 
 ## Overview
 
@@ -21,6 +21,7 @@ RemmyChat transforms your server's communication with a sleek, modern interface 
 - **Flexible Permission System** — Granular control over all plugin features and channels
 - **Group-Based Formatting** — Different chat formats based on player permissions
 - **Custom Placeholders** — Create reusable text elements for consistency across formats
+- **Message Placeholder Parsing** — Optional parsing of custom placeholders in chat messages themselves
 - **Template System** — Hover templates, channel prefixes, and name styles for easy configuration
 - **Interactive Elements** — Hoverable player names with customizable information tooltips
 - **Automatic URL Detection** — Link formatting with configurable click-to-open functionality
@@ -160,6 +161,44 @@ templates:
 
 RemmyChat automatically integrates with PlaceholderAPI if installed, allowing you to use any placeholders in your chat formats.
 
+### Message Placeholder Parsing
+
+RemmyChat can optionally parse placeholders within chat messages themselves. This feature provides two separate configuration options for maximum control:
+
+#### Custom Placeholders in Messages
+When enabled (`features.parse-placeholders-in-messages: true`), players can use custom placeholders directly in their chat messages:
+
+**Example:**
+```yaml
+# In config.yml
+placeholders:
+  heart: "<red>❤</red>"
+  gg: "<gradient:green:lime><bold>GG!</bold></gradient>"
+  shrug: "<gray>¯\\_(ツ)_/¯</gray>"
+```
+
+Players can then type: `Great game everyone! %gg% %heart%`
+Which renders as: `Great game everyone! GG! ❤`
+
+#### PlaceholderAPI in Messages
+When enabled (`features.parse-papi-placeholders-in-messages: true`), players can use PlaceholderAPI placeholders in their messages:
+
+Players can type: `My balance is %vault_eco_balance% and I'm %player_name%`
+Which renders as: `My balance is $1,250.50 and I'm Steve`
+
+**Configuration:**
+```yaml
+features:
+  parse-placeholders-in-messages: false      # Custom placeholders only
+  parse-papi-placeholders-in-messages: false # PlaceholderAPI placeholders
+```
+
+**Security Notes:** 
+- Custom placeholder parsing is generally safe as you control the definitions
+- PAPI placeholder parsing gives players access to ALL PlaceholderAPI placeholders
+- Consider carefully which information you want players to be able to display
+- Both features are disabled by default for security reasons
+
 ### LuckPerms
 
 When LuckPerms is detected, RemmyChat can use permission groups for chat formatting, simplifying setup for servers with existing permission structures.
@@ -183,5 +222,5 @@ The output JAR will be in the `build/libs` directory.
 - **Documentation**: [remmychat.noximity.com](https://remmychat.noximity.com)
 - **Website**: [noximity.com](https://noximity.com)
 - **Issues & Feature Requests**: Please use our GitHub issues tracker
-- **Version**: 1.4.5
+- **Version**: 1.4.6
 - **License**: GPL-3.0
