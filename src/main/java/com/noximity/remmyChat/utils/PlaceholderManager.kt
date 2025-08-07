@@ -15,7 +15,7 @@ class PlaceholderManager(private val plugin: RemmyChat) {
     private var debugEnabled = false
     private var debugPlaceholderResolution = false
 
-    init {
+    fun initialize() {
         updateDebugSettings()
         loadCustomPlaceholders()
     }
@@ -24,26 +24,65 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * Updates debug settings from config
      */
     private fun updateDebugSettings() {
-        this.debugEnabled = plugin.config.getBoolean("debug.enabled", false)
-        this.debugPlaceholderResolution =
-            debugEnabled && plugin.config.getBoolean("debug.placeholder-resolution", false)
+        try {
+            this.debugEnabled = plugin.config.getBoolean("debug.enabled", false)
+            this.debugPlaceholderResolution =
+                debugEnabled && plugin.config.getBoolean("debug.placeholder-resolution", false)
+        } catch (e: Exception) {
+            // Config not ready yet, use defaults
+            this.debugEnabled = false
+            this.debugPlaceholderResolution = false
+        }
     }
 
     /**
-     * Loads custom placeholders from the configuration
+     * Loads custom placeholders from the TemplateManager
      */
     fun loadCustomPlaceholders() {
         customPlaceholders.clear()
         updateDebugSettings()
 
-        val placeholdersSection = plugin.config.getConfigurationSection("placeholders")
-        if (placeholdersSection != null) {
-            for (key in placeholdersSection.getKeys(false)) {
-                val value = placeholdersSection.getString(key)
-                if (value != null) {
-                    customPlaceholders[key] = value
-                    if (debugPlaceholderResolution) {
-                        plugin.logger.info("Loaded custom placeholder: %$key%")
+        // Load placeholders from config for now
+        loadPlaceholdersFromConfig()
+    }
+
+    /**
+     * Load placeholders from templates config
+     */
+    private fun loadPlaceholdersFromConfig() {
+        // Try to load from templates.yml first
+        try {
+            val templatesFile = java.io.File(plugin.dataFolder, "templates.yml")
+            if (templatesFile.exists()) {
+                val templatesConfig = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(templatesFile)
+                val placeholdersSection = templatesConfig.getConfigurationSection("placeholders")
+                if (placeholdersSection != null) {
+                    for (key in placeholdersSection.getKeys(false)) {
+                        val value = placeholdersSection.getString(key)
+                        if (value != null) {
+                            customPlaceholders[key] = value
+                            if (debugPlaceholderResolution) {
+                                plugin.logger.info("Loaded custom placeholder from templates: %$key%")
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.warning("Failed to load templates.yml: ${e.message}")
+        }
+
+        // Fallback to main config if needed
+        if (customPlaceholders.isEmpty()) {
+            val placeholdersSection = plugin.config.getConfigurationSection("placeholders")
+            if (placeholdersSection != null) {
+                for (key in placeholdersSection.getKeys(false)) {
+                    val value = placeholdersSection.getString(key)
+                    if (value != null) {
+                        customPlaceholders[key] = value
+                        if (debugPlaceholderResolution) {
+                            plugin.logger.info("Loaded custom placeholder from config: %$key%")
+                        }
                     }
                 }
             }
@@ -60,7 +99,16 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * @return The text with custom placeholders replaced
      */
     fun applyCustomPlaceholders(text: String): String {
-        return resolveAllPlaceholders(text)
+        // Protect %message% placeholder from being processed
+        val messageProtectionToken = "<<MESSAGE_PROTECTION_TOKEN>>"
+        var result = text.replace("%message%", messageProtectionToken)
+
+        result = resolveAllPlaceholders(result)
+
+        // Restore protected %message% placeholder
+        result = result.replace(messageProtectionToken, "%message%")
+
+        return result
     }
 
     /**
@@ -200,6 +248,23 @@ class PlaceholderManager(private val plugin: RemmyChat) {
     }
 
     /**
+     * Refresh placeholders from TemplateManager after initialization
+     */
+    fun refreshFromTemplateManager() {
+        try {
+            val templateCache = plugin.templateManager.getPlaceholderCache()
+            templateCache.forEach { (key, value) ->
+                customPlaceholders[key] = value
+            }
+            if (debugPlaceholderResolution) {
+                plugin.logger.info("Refreshed ${templateCache.size} placeholders from TemplateManager")
+            }
+        } catch (e: Exception) {
+            plugin.logger.warning("Failed to refresh from TemplateManager: ${e.message}")
+        }
+    }
+
+    /**
      * Applies only PlaceholderAPI placeholders to a string
      * @param player The player context for PlaceholderAPI
      * @param text The text to process
@@ -207,27 +272,48 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      */
     fun applyPapiPlaceholders(player: Player, text: String): String {
         // Apply PAPI placeholders if available
-        if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
-            return PlaceholderAPI.setPlaceholders(player, text)
+        try {
+            if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
+                return PlaceholderAPI.setPlaceholders(player, text)
+            }
+        } catch (e: NoClassDefFoundError) {
+            // PlaceholderAPI classes not available, skip PAPI processing
+        } catch (e: Exception) {
+            // Other PlaceholderAPI error, skip PAPI processing
+            plugin.logger.warning("Error applying PlaceholderAPI placeholders: ${e.message}")
         }
 
         return text
     }
 
     /**
-     * Applies all placeholders (custom and PAPI) to a string
-     * @param player The player context for PlaceholderAPI
+     * Applies all placeholders to a string (including PlaceholderAPI if available)
+     * @param player The player context
      * @param text The text to process
      * @return The text with all placeholders replaced
      */
     fun applyAllPlaceholders(player: Player, text: String): String {
+        // Protect %message% placeholder from being processed
+        val messageProtectionToken = "<<MESSAGE_PROTECTION_TOKEN>>"
+        var result = text.replace("%message%", messageProtectionToken)
+
         // First apply our custom placeholders
-        var result = applyCustomPlaceholders(text)
+        result = applyCustomPlaceholders(result)
 
         // Then apply PAPI placeholders if available
-        if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
-            result = PlaceholderAPI.setPlaceholders(player, result)
+        try {
+            if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
+                result = PlaceholderAPI.setPlaceholders(player, result)
+            }
+        } catch (e: NoClassDefFoundError) {
+            // PlaceholderAPI classes not available, skip PAPI processing
+        } catch (e: Exception) {
+            // Other PlaceholderAPI error, skip PAPI processing
+            plugin.logger.warning("Error applying PlaceholderAPI placeholders: ${e.message}")
         }
+
+        // Restore protected %message% placeholder
+        result = result.replace(messageProtectionToken, "%message%")
 
         return result
     }

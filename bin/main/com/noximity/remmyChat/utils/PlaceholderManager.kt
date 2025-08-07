@@ -11,7 +11,7 @@ import kotlin.collections.MutableMap
 import kotlin.collections.MutableSet
 
 class PlaceholderManager(private val plugin: RemmyChat) {
-    private val customPlaceholders: MutableMap<String?, String?> = HashMap<String?, String?>()
+    private val customPlaceholders: MutableMap<String, String> = HashMap<String, String>()
     private var debugEnabled = false
     private var debugPlaceholderResolution = false
 
@@ -24,14 +24,9 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * Updates debug settings from config
      */
     private fun updateDebugSettings() {
-        this.debugEnabled = plugin
-            .getConfig()
-            .getBoolean("debug.enabled", false)
+        this.debugEnabled = plugin.config.getBoolean("debug.enabled", false)
         this.debugPlaceholderResolution =
-            debugEnabled &&
-                    plugin
-                        .getConfig()
-                        .getBoolean("debug.placeholder-resolution", false)
+            debugEnabled && plugin.config.getBoolean("debug.placeholder-resolution", false)
     }
 
     /**
@@ -41,29 +36,21 @@ class PlaceholderManager(private val plugin: RemmyChat) {
         customPlaceholders.clear()
         updateDebugSettings()
 
-        val placeholdersSection = plugin
-            .getConfig()
-            .getConfigurationSection("placeholders")
+        val placeholdersSection = plugin.config.getConfigurationSection("placeholders")
         if (placeholdersSection != null) {
             for (key in placeholdersSection.getKeys(false)) {
                 val value = placeholdersSection.getString(key)
                 if (value != null) {
-                    customPlaceholders.put(key, value)
+                    customPlaceholders[key] = value
                     if (debugPlaceholderResolution) {
-                        plugin
-                            .getLogger()
-                            .info("Loaded custom placeholder: %" + key + "%")
+                        plugin.logger.info("Loaded custom placeholder: %$key%")
                     }
                 }
             }
         }
 
         if (debugPlaceholderResolution) {
-            plugin
-                .getLogger()
-                .info(
-                    "Total placeholders loaded: " + customPlaceholders.size
-                )
+            plugin.logger.info("Total placeholders loaded: ${customPlaceholders.size}")
         }
     }
 
@@ -72,8 +59,7 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * @param text The text to process
      * @return The text with custom placeholders replaced
      */
-    fun applyCustomPlaceholders(text: String?): String {
-        if (text == null) return ""
+    fun applyCustomPlaceholders(text: String): String {
         return resolveAllPlaceholders(text)
     }
 
@@ -96,23 +82,23 @@ class PlaceholderManager(private val plugin: RemmyChat) {
         }
 
         // Create a dependency graph and detect circular references
-        val dependencies: MutableMap<String?, MutableSet<String>> = HashMap<String?, MutableSet<String>>()
+        val dependencies: MutableMap<String, MutableSet<String>> = HashMap<String, MutableSet<String>>()
         for (key in mentionedPlaceholders) {
-            dependencies.put(key, HashSet<String?>())
+            dependencies[key] = HashSet<String>()
 
-            val value = customPlaceholders.get(key)
+            val value = customPlaceholders[key]
             if (value != null) {
                 val depMatcher: Matcher = PLACEHOLDER_PATTERN.matcher(value)
                 while (depMatcher.find()) {
                     val depKey = depMatcher.group(1)
-                    dependencies.get(key)!!.add(depKey!!)
+                    dependencies[key]!!.add(depKey!!)
                 }
             }
         }
 
         // Resolve placeholders in order (placeholders without dependencies first)
-        val resolvedValues: MutableMap<String?, String> = HashMap<String?, String>()
-        val processingSet: MutableSet<String?> = HashSet<String?>()
+        val resolvedValues: MutableMap<String, String> = HashMap<String, String>()
+        val processingSet: MutableSet<String> = HashSet<String>()
 
         for (key in mentionedPlaceholders) {
             resolvePlaceholderValue(
@@ -141,29 +127,20 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      */
     private fun resolvePlaceholderValue(
         key: String,
-        dependencies: MutableMap<String?, MutableSet<String>>,
-        resolvedValues: MutableMap<String?, String>,
-        processingSet: MutableSet<String?>,
+        dependencies: MutableMap<String, MutableSet<String>>,
+        resolvedValues: MutableMap<String, String>,
+        processingSet: MutableSet<String>,
         depth: Int
     ): String {
         // Check for infinite recursion
         if (depth > MAX_RECURSION_DEPTH) {
-            plugin
-                .getLogger()
-                .warning(
-                    "Maximum placeholder recursion depth exceeded for key: " +
-                            key
-                )
+            plugin.logger.warning("Maximum placeholder recursion depth exceeded for key: $key")
             return "⚠️ Recursion limit"
         }
 
         // Check for circular dependencies
         if (processingSet.contains(key)) {
-            plugin
-                .getLogger()
-                .warning(
-                    "Circular placeholder dependency detected for key: " + key
-                )
+            plugin.logger.warning("Circular placeholder dependency detected for key: $key")
             return "⚠️ Circular reference"
         }
 
@@ -173,16 +150,14 @@ class PlaceholderManager(private val plugin: RemmyChat) {
         }
 
         // Get the raw value
-        var value = customPlaceholders.get(key)
+        var value = customPlaceholders[key]
         if (value == null) {
             return "%" + key + "%" // Placeholder not found, return as is
         }
 
         // Debug log
         if (debugPlaceholderResolution && depth == 0) {
-            plugin
-                .getLogger()
-                .info("Resolving placeholder %" + key + "% = " + value)
+            plugin.logger.info("Resolving placeholder %$key% = $value")
         }
 
         // Mark as being processed (to detect cycles)
@@ -191,12 +166,12 @@ class PlaceholderManager(private val plugin: RemmyChat) {
         // Process dependencies first
         val deps = dependencies.getOrDefault(
             key,
-            mutableSetOf<String?>()
+            mutableSetOf<String>()
         )
         for (depKey in deps) {
             if (customPlaceholders.containsKey(depKey)) {
                 val depValue = resolvePlaceholderValue(
-                    depKey,
+                    depKey!!,
                     dependencies,
                     resolvedValues,
                     processingSet,
@@ -204,12 +179,10 @@ class PlaceholderManager(private val plugin: RemmyChat) {
                 )
 
                 if (debugPlaceholderResolution && depth == 0) {
-                    plugin
-                        .getLogger()
-                        .info(" - Dependency %" + depKey + "% = " + depValue)
+                    plugin.logger.info(" - Dependency %$depKey% = $depValue")
                 }
 
-                value = value.replace("%" + depKey + "%", depValue)
+                value = value!!.replace("%" + depKey + "%", depValue)
             }
         }
 
@@ -217,15 +190,13 @@ class PlaceholderManager(private val plugin: RemmyChat) {
         processingSet.remove(key)
 
         // Cache and return the resolved value
-        resolvedValues.put(key, value!!)
+        resolvedValues[key] = value ?: ""
 
         if (debugPlaceholderResolution && depth == 0) {
-            plugin
-                .getLogger()
-                .info("Final resolved value for %" + key + "% = " + value)
+            plugin.logger.info("Final resolved value for %$key% = $value")
         }
 
-        return value
+        return value ?: ""
     }
 
     /**
@@ -234,14 +205,9 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * @param text The text to process
      * @return The text with PAPI placeholders replaced
      */
-    fun applyPapiPlaceholders(player: Player?, text: String?): String {
-        if (text == null) return ""
-
+    fun applyPapiPlaceholders(player: Player, text: String): String {
         // Apply PAPI placeholders if available
-        if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") !=
-            null &&
-            player != null
-        ) {
+        if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
             return PlaceholderAPI.setPlaceholders(player, text)
         }
 
@@ -254,17 +220,12 @@ class PlaceholderManager(private val plugin: RemmyChat) {
      * @param text The text to process
      * @return The text with all placeholders replaced
      */
-    fun applyAllPlaceholders(player: Player?, text: String?): String? {
-        if (text == null) return ""
-
+    fun applyAllPlaceholders(player: Player, text: String): String {
         // First apply our custom placeholders
         var result = applyCustomPlaceholders(text)
 
         // Then apply PAPI placeholders if available
-        if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") !=
-            null &&
-            player != null
-        ) {
+        if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
             result = PlaceholderAPI.setPlaceholders(player, result)
         }
 

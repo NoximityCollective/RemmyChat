@@ -9,17 +9,26 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import java.util.*
-import java.util.stream.Collectors
 
 class MessageCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"))
+            val errorMsg = plugin.formatService.formatSystemMessage("error.players-only")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("This command is for players only!")
+            }
             return true
         }
 
         if (args.size < 2) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.msg-usage"))
+            val usageMsg = plugin.formatService.formatSystemMessage("error.msg-usage")
+            if (usageMsg != null) {
+                sender.sendMessage(usageMsg)
+            } else {
+                sender.sendMessage("Usage: /msg <player> <message>")
+            }
             return true
         }
 
@@ -29,39 +38,50 @@ class MessageCommand(private val plugin: RemmyChat) : CommandExecutor, TabComple
 
         // Check for exact match first
         for (onlinePlayer in Bukkit.getOnlinePlayers()) {
-            if (onlinePlayer.getName().equals(targetName, ignoreCase = true)) {
+            if (onlinePlayer.name.equals(targetName, ignoreCase = true)) {
                 target = onlinePlayer
                 break
             }
         }
 
         // If no exact match was found, show error
-        if (target == null || !target.isOnline()) {
-            sender.sendMessage(
-                plugin.getFormatService().formatSystemMessage(
-                    "error.player-not-found",
-                    Placeholder.parsed("player", args[0])
-                )
+        if (target == null || !target.isOnline) {
+            val errorMsg = plugin.formatService.formatSystemMessage(
+                "error.player-not-found",
+                Placeholder.parsed("player", args[0])
             )
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("Player ${args[0]} not found!")
+            }
             return true
         }
 
         if (target == sender) {
             // Only block self-messaging if not allowed in config
-            if (!plugin.getConfigManager().isAllowSelfMessaging()) {
-                sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.cannot-message-self"))
+            if (!plugin.configManager.isAllowSelfMessaging) {
+                val errorMsg = plugin.formatService.formatSystemMessage("error.cannot-message-self")
+                if (errorMsg != null) {
+                    sender.sendMessage(errorMsg)
+                } else {
+                    sender.sendMessage("You cannot message yourself!")
+                }
                 return true
             }
         }
 
-        val targetUser = plugin.getChatService().getChatUser(target.getUniqueId())
-        if (!targetUser.isMsgToggle() && !sender.hasPermission("remmychat.msgtoggle.bypass")) {
-            sender.sendMessage(
-                plugin.getFormatService().formatSystemMessage(
-                    "error.player-messages-disabled",
-                    Placeholder.parsed("player", target.getName())
-                )
+        val targetUser = plugin.chatService.getChatUser(target.uniqueId)
+        if (targetUser != null && !targetUser.isMsgToggle && !sender.hasPermission("remmychat.msgtoggle.bypass")) {
+            val errorMsg = plugin.formatService.formatSystemMessage(
+                "error.player-messages-disabled",
+                Placeholder.parsed("player", target.name)
             )
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("${target.name} has messages disabled!")
+            }
             return true
         }
 
@@ -69,41 +89,46 @@ class MessageCommand(private val plugin: RemmyChat) : CommandExecutor, TabComple
         for (i in 1..<args.size) {
             messageBuilder.append(args[i]).append(" ")
         }
-        val message: String = messageBuilder.toString().trim { it <= ' ' }
-        sender.sendMessage(
-            plugin.getFormatService().formatSystemMessage(
-                "msg-to-format",
-                Placeholder.parsed("player", target.getName()),
-                Placeholder.parsed("message", message)
-            )
-        )
+        val message: String = messageBuilder.toString().trim()
 
-        target.sendMessage(
-            plugin.getFormatService().formatSystemMessage(
-                "msg-from-format",
-                Placeholder.parsed("player", sender.getName()),
-                Placeholder.parsed("message", message)
-            )
+        val toMsg = plugin.formatService.formatSystemMessage(
+            "msg-to-format",
+            Placeholder.parsed("player", target.name),
+            Placeholder.parsed("message", message)
         )
+        if (toMsg != null) {
+            sender.sendMessage(toMsg)
+        }
 
-        val spyMessage = plugin.getFormatService().formatSystemMessage(
+        val fromMsg = plugin.formatService.formatSystemMessage(
+            "msg-from-format",
+            Placeholder.parsed("player", sender.name),
+            Placeholder.parsed("message", message)
+        )
+        if (fromMsg != null) {
+            target.sendMessage(fromMsg)
+        }
+
+        val spyMessage = plugin.formatService.formatSystemMessage(
             "socialspy-format",
-            Placeholder.parsed("sender", sender.getName()),
-            Placeholder.parsed("receiver", target.getName()),
+            Placeholder.parsed("sender", sender.name),
+            Placeholder.parsed("receiver", target.name),
             Placeholder.parsed("message", message)
         )
 
-        for (spyUser in plugin.getChatService().getSocialSpyUsers()) {
-            val spy = plugin.getServer().getPlayer(spyUser.getUuid())
-            if (spy != null && spy.isOnline() && (spy != sender) && (spy != target)) {
-                spy.sendMessage(spyMessage)
+        for (spyUser in plugin.chatService.getSocialSpyUsers()) {
+            val spy = plugin.server.getPlayer(spyUser.uuid)
+            if (spy != null && spy.isOnline && (spy != sender) && (spy != target)) {
+                if (spyMessage != null) {
+                    spy.sendMessage(spyMessage)
+                }
             }
         }
 
-        targetUser.setLastMessagedPlayer(sender.getUniqueId())
+        targetUser?.lastMessagedPlayer = sender.uniqueId
 
-        val senderUser = plugin.getChatService().getChatUser(sender.getUniqueId())
-        senderUser.setLastMessagedPlayer(target.getUniqueId())
+        val senderUser = plugin.chatService.getChatUser(sender.uniqueId)
+        senderUser?.lastMessagedPlayer = target.uniqueId
 
         return true
     }
@@ -113,17 +138,17 @@ class MessageCommand(private val plugin: RemmyChat) : CommandExecutor, TabComple
         command: Command,
         alias: String,
         args: Array<String>
-    ): MutableList<String?>? {
+    ): MutableList<String> {
+        val completions = mutableListOf<String>()
+
         if (args.size == 1) {
-            return Bukkit.getOnlinePlayers().stream()
-                .filter { player: Player? ->
-                    args[0].isEmpty() || player!!.getName().lowercase(Locale.getDefault())
-                        .startsWith(args[0].lowercase(Locale.getDefault()))
+            for (player in Bukkit.getOnlinePlayers()) {
+                if (args[0].isEmpty() || player.name.lowercase().startsWith(args[0].lowercase())) {
+                    completions.add(player.name)
                 }
-                .map<String?> { obj: Player? -> obj!!.getName() }
-                .collect(Collectors.toList())
+            }
         }
-        return ArrayList<String?>()
+
+        return completions
     }
 }
-

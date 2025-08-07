@@ -13,7 +13,7 @@ import java.util.stream.Collectors
 
 class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        if (args.size == 0) {
+        if (args.isEmpty()) {
             if (sender is Player) {
                 sendHelpMessage(sender)
             } else {
@@ -26,7 +26,12 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
         when (args[0].lowercase(Locale.getDefault())) {
             "channel", "ch" -> {
                 if (sender !is Player) {
-                    sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"))
+                    val errorMsg = plugin.formatService.formatSystemMessage("error.players-only")
+                    if (errorMsg != null) {
+                        sender.sendMessage(errorMsg)
+                    } else {
+                        sender.sendMessage("This command is for players only!")
+                    }
                     return true
                 }
                 handleChannelCommand(sender, args)
@@ -49,69 +54,98 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
     private fun handleChannelCommand(player: Player, args: Array<String>) {
         if (args.size < 2) {
             // Show current channel
-            player.sendMessage(
-                plugin.getFormatService().formatSystemMessage(
-                    "current-channel",
-                    Placeholder.parsed(
-                        "channel",
-                        plugin.getChatService().getChatUser(player.getUniqueId()).getCurrentChannel()
-                    )
-                )
+            val chatUser = plugin.chatService.getChatUser(player.uniqueId)
+            val currentChannel = chatUser?.currentChannel ?: "unknown"
+            val message = plugin.formatService.formatSystemMessage(
+                "current-channel",
+                Placeholder.parsed("channel", currentChannel)
             )
+            if (message != null) {
+                player.sendMessage(message)
+            } else {
+                player.sendMessage("Current channel: $currentChannel")
+            }
             return
         }
 
         val channelName: String = args[1].lowercase(Locale.getDefault())
-        val channel = plugin.getConfigManager().getChannel(channelName)
+        val channel = plugin.configManager.getChannel(channelName)
 
         if (channel == null) {
-            player.sendMessage(
-                plugin.getFormatService().formatSystemMessage(
-                    "error.channel-not-found",
-                    Placeholder.parsed("channel", channelName)
-                )
+            val message = plugin.formatService.formatSystemMessage(
+                "error.channel-not-found",
+                Placeholder.parsed("channel", channelName)
             )
+            if (message != null) {
+                player.sendMessage(message)
+            } else {
+                player.sendMessage("Channel '$channelName' not found!")
+            }
             return
         }
 
         // Check permission
-        if (channel.getPermission() != null && !channel.getPermission()
-                .isEmpty() && !player.hasPermission(channel.getPermission())
-        ) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"))
+        val permission = channel.permission
+        if (permission != null && permission.isNotEmpty() && !player.hasPermission(permission)) {
+            val message = plugin.formatService.formatSystemMessage("error.no-permission")
+            if (message != null) {
+                player.sendMessage(message)
+            } else {
+                player.sendMessage("You don't have permission to use this channel!")
+            }
             return
         }
 
         // Set channel
-        plugin.getChatService().setChannel(player.getUniqueId(), channelName)
-        player.sendMessage(
-            plugin.getFormatService().formatSystemMessage(
-                "channel-changed",
-                Placeholder.parsed("channel", channelName)
-            )
+        plugin.chatService.setChannel(player.uniqueId, channelName)
+        val message = plugin.formatService.formatSystemMessage(
+            "channel-changed",
+            Placeholder.parsed("channel", channelName)
         )
+        if (message != null) {
+            player.sendMessage(message)
+        } else {
+            player.sendMessage("Channel changed to: $channelName")
+        }
     }
 
     private fun handleReloadCommand(sender: CommandSender) {
         if (sender is Player && !sender.hasPermission("remmychat.admin")) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"))
+            val message = plugin.formatService.formatSystemMessage("error.no-permission")
+            if (message != null) {
+                sender.sendMessage(message)
+            } else {
+                sender.sendMessage("You don't have permission to use this command!")
+            }
             return
         }
 
-        plugin.getConfigManager().reloadConfig()
-        plugin.getMessages().reloadMessages()
-        sender.sendMessage(plugin.getFormatService().formatSystemMessage("plugin-reloaded"))
+        plugin.configManager.reloadConfig()
+        plugin.messages.reloadMessages()
+        val message = plugin.formatService.formatSystemMessage("plugin-reloaded")
+        if (message != null) {
+            sender.sendMessage(message)
+        } else {
+            sender.sendMessage("Plugin reloaded successfully!")
+        }
     }
 
     private fun sendHelpMessage(player: Player) {
-        player.sendMessage(plugin.getFormatService().formatSystemMessage("help-header"))
-        player.sendMessage(plugin.getFormatService().formatSystemMessage("help-channel"))
+        val formatService = plugin.formatService
+
+        val headerMsg = formatService.formatSystemMessage("help-header")
+        if (headerMsg != null) player.sendMessage(headerMsg)
+
+        val channelMsg = formatService.formatSystemMessage("help-channel")
+        if (channelMsg != null) player.sendMessage(channelMsg)
 
         if (player.hasPermission("remmychat.admin")) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("help-reload"))
+            val reloadMsg = formatService.formatSystemMessage("help-reload")
+            if (reloadMsg != null) player.sendMessage(reloadMsg)
         }
 
-        player.sendMessage(plugin.getFormatService().formatSystemMessage("help-footer"))
+        val footerMsg = formatService.formatSystemMessage("help-footer")
+        if (footerMsg != null) player.sendMessage(footerMsg)
     }
 
     override fun onTabComplete(
@@ -119,8 +153,8 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
         command: Command,
         label: String,
         args: Array<String>
-    ): MutableList<String?>? {
-        val completions: MutableList<String?> = ArrayList<String?>()
+    ): MutableList<String> {
+        val completions: MutableList<String> = ArrayList()
 
         if (args.size == 1) {
             completions.add("channel")
@@ -128,15 +162,13 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
                 completions.add("reload")
             }
         } else if (args.size == 2 && args[0].equals("channel", ignoreCase = true)) {
-            val channels = plugin.getConfigManager().getChannels()
-            completions.addAll(
-                channels.keys.stream()
-                    .filter { channel: String? ->
-                        val ch: Channel = channels.get(channel)!!
-                        ch.getPermission() == null || ch.getPermission().isEmpty()
-                                || sender.hasPermission(ch.getPermission())
-                    }
-                    .collect(Collectors.toList()))
+            val channels = plugin.configManager.channels
+            for ((channelName, channel) in channels) {
+                val permission = channel.permission
+                if (permission == null || permission.isEmpty() || sender.hasPermission(permission as String)) {
+                    completions.add(channelName)
+                }
+            }
         }
 
         return completions

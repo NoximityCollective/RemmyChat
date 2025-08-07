@@ -7,7 +7,7 @@ build/
 
 # Log files
 *.log
-
+.bin/*
 # BlueJ files
 *.ctxt
 

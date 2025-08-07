@@ -11,37 +11,64 @@ import org.bukkit.entity.Player
 class ReplyCommand(private val plugin: RemmyChat) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"))
+            val errorMsg = plugin.formatService.formatSystemMessage("error.players-only")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("This command is for players only!")
+            }
             return true
         }
 
-        if (args.size < 1) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.reply-usage"))
+        if (args.isEmpty()) {
+            val usageMsg = plugin.formatService.formatSystemMessage("error.reply-usage")
+            if (usageMsg != null) {
+                sender.sendMessage(usageMsg)
+            } else {
+                sender.sendMessage("Usage: /reply <message>")
+            }
             return true
         }
 
-        val chatUser = plugin.getChatService().getChatUser(sender.getUniqueId())
-        val lastMessagedUUID = chatUser.getLastMessagedPlayer()
+        val chatUser = plugin.chatService.getChatUser(sender.uniqueId)
+        if (chatUser == null) {
+            sender.sendMessage("Error: Could not load user data!")
+            return true
+        }
 
+        val lastMessagedUUID = chatUser.lastMessagedPlayer
         if (lastMessagedUUID == null) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.nobody-to-reply"))
+            val errorMsg = plugin.formatService.formatSystemMessage("error.nobody-to-reply")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("Nobody to reply to!")
+            }
             return true
         }
 
         val target = Bukkit.getPlayer(lastMessagedUUID)
-        if (target == null || !target.isOnline()) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.player-not-online"))
+        if (target == null || !target.isOnline) {
+            val errorMsg = plugin.formatService.formatSystemMessage("error.player-not-online")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("Player is not online!")
+            }
             return true
         }
 
-        val targetUser = plugin.getChatService().getChatUser(target.getUniqueId())
-        if (!targetUser.isMsgToggle() && !sender.hasPermission("remmychat.msgtoggle.bypass")) {
-            sender.sendMessage(
-                plugin.getFormatService().formatSystemMessage(
-                    "error.player-messages-disabled",
-                    Placeholder.parsed("player", target.getName())
-                )
+        val targetUser = plugin.chatService.getChatUser(target.uniqueId)
+        if (targetUser != null && !targetUser.isMsgToggle && !sender.hasPermission("remmychat.msgtoggle.bypass")) {
+            val errorMsg = plugin.formatService.formatSystemMessage(
+                "error.player-messages-disabled",
+                Placeholder.parsed("player", target.name)
             )
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("${target.name} has messages disabled!")
+            }
             return true
         }
 
@@ -49,38 +76,44 @@ class ReplyCommand(private val plugin: RemmyChat) : CommandExecutor {
         for (arg in args) {
             messageBuilder.append(arg).append(" ")
         }
-        val message: String = messageBuilder.toString().trim { it <= ' ' }
-        sender.sendMessage(
-            plugin.getFormatService().formatSystemMessage(
-                "msg-to-format",
-                Placeholder.parsed("player", target.getName()),
-                Placeholder.parsed("message", message)
-            )
-        )
+        val message: String = messageBuilder.toString().trim()
 
-        target.sendMessage(
-            plugin.getFormatService().formatSystemMessage(
-                "msg-from-format",
-                Placeholder.parsed("player", sender.getName()),
-                Placeholder.parsed("message", message)
-            )
+        val toMsg = plugin.formatService.formatSystemMessage(
+            "msg-to-format",
+            Placeholder.parsed("player", target.name),
+            Placeholder.parsed("message", message)
         )
+        if (toMsg != null) {
+            sender.sendMessage(toMsg)
+        }
 
-        val spyMessage = plugin.getFormatService().formatSystemMessage(
+        val fromMsg = plugin.formatService.formatSystemMessage(
+            "msg-from-format",
+            Placeholder.parsed("player", sender.name),
+            Placeholder.parsed("message", message)
+        )
+        if (fromMsg != null) {
+            target.sendMessage(fromMsg)
+        }
+
+        val spyMessage = plugin.formatService.formatSystemMessage(
             "socialspy-format",
-            Placeholder.parsed("sender", sender.getName()),
-            Placeholder.parsed("receiver", target.getName()),
+            Placeholder.parsed("sender", sender.name),
+            Placeholder.parsed("receiver", target.name),
             Placeholder.parsed("message", message)
         )
 
-        for (spyUser in plugin.getChatService().getSocialSpyUsers()) {
-            val spy = plugin.getServer().getPlayer(spyUser.getUuid())
-            if (spy != null && spy.isOnline() && (spy != sender) && (spy != target)) {
-                spy.sendMessage(spyMessage)
+        for (spyUser in plugin.chatService.getSocialSpyUsers()) {
+            val spy = plugin.server.getPlayer(spyUser.uuid)
+            if (spy != null && spy.isOnline && (spy != sender) && (spy != target)) {
+                if (spyMessage != null) {
+                    spy.sendMessage(spyMessage)
+                }
             }
         }
 
-        targetUser.setLastMessagedPlayer(sender.getUniqueId())
+        targetUser?.lastMessagedPlayer = sender.uniqueId
+        chatUser.lastMessagedPlayer = target.uniqueId
 
         return true
     }

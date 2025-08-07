@@ -1,0 +1,453 @@
+# Group Configuration
+# Permission-based formatting and behaviors
+
+groups:
+  owner:
+    priority: 1000
+    display-name: "Owner"
+    description: "Server owner with full privileges"
+    permissions:
+      - "remmychat.group.owner"
+      - "group.owner"
+      - "*"
+      - "essentials.*"
+    formatting:
+      name-style: "<click:run_command:'/sudo %player_name%'><hover:show_text:'Server Owner'><bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold></hover></click>"
+      prefix: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Server Owner'><red>[OWNER]</red></hover></click>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "owner-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: true
+      bypass-filters: true
+      use-colors: true
+      use-formatting: true
+      mention-everyone: true
+      priority-messages: true
+
+  admin:
+    priority: 900
+    display-name: "Administrator"
+    description: "Server administrator"
+    permissions:
+      - "remmychat.group.admin"
+      - "group.admin"
+      - "essentials.admin"
+      - "bukkit.command.op"
+    formatting:
+      name-style: "<click:run_command:'/teleport %player_name%'><hover:show_text:'Administrator'><italic><color:#CC44FF>%player_name%</color></italic></hover></click>"
+      prefix: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Administrator'><red>[ADMIN]</red></hover></click>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "admin-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: true
+      bypass-filters: true
+      use-colors: true
+      use-formatting: true
+      mention-everyone: true
+      priority-messages: true
+      social-spy-access: true
+      moderate-chat: true
+
+  senior-mod:
+    priority: 800
+    display-name: "Senior Moderator"
+    description: "Experienced moderator"
+    permissions:
+      - "remmychat.group.seniormod"
+      - "group.seniormod"
+      - "group.senior-moderator"
+    formatting:
+      name-style: "<bold><color:#FF6B35>%player_name%</color></bold>"
+      prefix: "<gold>[Sr.Mod]</gold>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "staff-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: true
+      bypass-filters: false
+      use-colors: true
+      use-formatting: true
+      mention-everyone: false
+      priority-messages: false
+      social-spy-access: true
+      moderate-chat: true
+      staff-channels: true
+
+  moderator:
+    priority: 700
+    display-name: "Moderator"
+    description: "Staff moderator"
+    permissions:
+      - "remmychat.group.moderator"
+      - "remmychat.group.mod"
+      - "group.moderator"
+      - "group.mod"
+    formatting:
+      name-style: "<click:suggest_command:'/report %player_name%'><hover:show_text:'Moderator'><bold><color:#33CCFF>%player_name%</color></bold></hover></click>"
+      prefix: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Moderator'><blue>[Mod]</blue></hover></click>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "staff-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: true
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+      social-spy-access: true
+      moderate-chat: true
+      staff-channels: true
+
+  helper:
+    priority: 650
+    display-name: "Helper"
+    description: "Community helper"
+    permissions:
+      - "remmychat.group.helper"
+      - "group.helper"
+      - "group.junior-staff"
+    formatting:
+      name-style: "<color:#90EE90>%player_name%</color>"
+      prefix: "<green>[Helper]</green>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "helper-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+      social-spy-access: false
+      moderate-chat: false
+      staff-channels: true
+
+  vip-plus:
+    priority: 600
+    display-name: "VIP+"
+    description: "Premium VIP member"
+    permissions:
+      - "remmychat.group.vipplus"
+      - "group.vipplus"
+      - "group.vip+"
+    formatting:
+      name-style: "<bold><gradient:#FFD700:#FFA500>%player_name%</gradient></bold>"
+      prefix: "<gradient:#FFD700:#FFA500>[VIP+]</gradient>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "vip-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: true
+      use-formatting: true
+      mention-everyone: false
+      priority-messages: false
+      custom-join-message: true
+      name-colors: true
+      chat-effects: true
+
+  vip:
+    priority: 500
+    display-name: "VIP"
+    description: "VIP member"
+    permissions:
+      - "remmychat.group.vip"
+      - "group.vip"
+    formatting:
+      name-style: "<click:suggest_command:'/pay %player_name%'><hover:show_text:'VIP Player'><color:#FFCC00>%player_name%</color></hover></click>"
+      prefix: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'VIP Player'><yellow>[VIP]</yellow></hover></click>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "vip-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+      custom-join-message: true
+      name-colors: false
+      chat-effects: false
+
+  donor:
+    priority: 400
+    display-name: "Donor"
+    description: "Server supporter"
+    permissions:
+      - "remmychat.group.donor"
+      - "group.donor"
+      - "group.supporter"
+    formatting:
+      name-style: "<click:suggest_command:'/thank %player_name%'><hover:show_text:'Donor'><color:#90EE90>%player_name%</color></hover></click>"
+      prefix: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Donor'><green>[Donor]</green></hover></click>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "donor-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+      custom-join-message: false
+      name-colors: false
+      chat-effects: false
+
+  veteran:
+    priority: 350
+    display-name: "Veteran"
+    description: "Longtime member"
+    permissions:
+      - "remmychat.group.veteran"
+      - "group.veteran"
+    formatting:
+      name-style: "<color:#8A2BE2>%player_name%</color>"
+      prefix: "<light_purple>[Veteran]</light_purple>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "veteran-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+
+  member:
+    priority: 300
+    display-name: "Member"
+    description: "Verified member"
+    permissions:
+      - "remmychat.group.member"
+      - "group.member"
+      - "group.player"
+    formatting:
+      name-style: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Member'><gray>%player_name%</gray></hover></click>"
+      prefix: ""
+      suffix: ""
+      chat-format: "%name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "member-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+
+  guest:
+    priority: 200
+    display-name: "Guest"
+    description: "New player"
+    permissions:
+      - "remmychat.group.guest"
+      - "group.guest"
+      - "group.new"
+    formatting:
+      name-style: "<gray>%player_name%</gray>"
+      prefix: "<dark_gray>[Guest]</dark_gray>"
+      suffix: ""
+      chat-format: "%prefix% %name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "guest-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+      restricted-channels: ["trade", "event"]
+      chat-delay: 5
+
+  default:
+    priority: 100
+    display-name: "Player"
+    description: "Default player"
+    permissions: []
+    formatting:
+      name-style: "<white>%player_name%</white>"
+      prefix: ""
+      suffix: ""
+      chat-format: "%name-style% <dark_gray>»</dark_gray> %message%"
+    interactions:
+      hover-template: "player-hover"
+      click-action: "suggest"
+      click-command: "/msg %player_name% "
+    features:
+      bypass-cooldown: false
+      bypass-filters: false
+      use-colors: false
+      use-formatting: false
+      mention-everyone: false
+      priority-messages: false
+
+inheritance:
+  enabled: true
+  rules:
+    - parent: "admin"
+      children: ["senior-mod", "moderator"]
+      inherit: ["staff-channels", "moderate-chat"]
+    - parent: "senior-mod"
+      children: ["moderator", "helper"]
+      inherit: ["staff-channels"]
+    - parent: "vip-plus"
+      children: ["vip"]
+      inherit: ["name-colors"]
+    - parent: "vip"
+      children: ["donor"]
+      inherit: ["custom-join-message"]
+    - parent: "member"
+      children: ["guest"]
+      inherit: ["basic-chat"]
+
+detection:
+  method: "permission"
+  permission-detection:
+    check-all: true
+    cache-duration: 300
+    auto-update: true
+  vault-integration:
+    enabled: true
+    use-primary-group: true
+    group-mapping:
+      "admin": "admin"
+      "moderator": "moderator"
+      "vip": "vip"
+      "default": "member"
+  luckperms-integration:
+    enabled: true
+    use-primary-group: true
+    check-parents: true
+    use-weight: true
+
+behaviors:
+  channel-access:
+    enabled: true
+    restrictions:
+      staff:
+        allowed-groups: ["owner", "admin", "senior-mod", "moderator", "helper"]
+        denied-groups: []
+      admin:
+        allowed-groups: ["owner", "admin"]
+        denied-groups: []
+      trade:
+        allowed-groups: ["*"]
+        denied-groups: ["guest"]
+      event:
+        allowed-groups: ["*"]
+        denied-groups: ["guest"]
+
+  message-limits:
+    enabled: true
+    limits:
+      owner: 1000
+      admin: 800
+      senior-mod: 600
+      moderator: 500
+      helper: 400
+      vip-plus: 400
+      vip: 300
+      donor: 250
+      veteran: 200
+      member: 200
+      guest: 150
+      default: 200
+
+  mention-restrictions:
+    enabled: true
+    everyone-mentions:
+      allowed-groups: ["owner", "admin"]
+    staff-mentions:
+      allowed-groups: ["owner", "admin", "senior-mod", "moderator", "helper"]
+    mention-cooldowns:
+      owner: 0
+      admin: 0
+      senior-mod: 30
+      moderator: 60
+      helper: 120
+      vip-plus: 300
+      vip: 600
+      donor: 600
+      veteran: 600
+      member: 600
+      guest: 900
+      default: 600
+
+display:
+  list-command:
+    enabled: true
+    command: "/groups"
+    format:
+      header: "<gold>=== Server Groups ===</gold>"
+      group-line: "<white>%priority%. %display-name% - %description%</white>"
+      footer: "<gray>Use /group info <name> for details</gray>"
+    show-online-count: true
+
+  info-command:
+    enabled: true
+    command: "/group"
+    format:
+      header: "<gold>=== %display-name% Group ===</gold>"
+      description: "<white>%description%</white>"
+      priority: "<gray>Priority: %priority%</gray>"
+      permissions: "<gray>Permissions: %permissions%</gray>"
+      features: "<gray>Features: %features%</gray>"
+      members: "<gray>Online Members (%count%): %member-list%</gray>"
+
+performance:
+  caching:
+    enabled: true
+    cache-size: 1000
+    cache-duration: 300
+    preload-groups: ["default", "member", "vip"]
+  async-detection: true
+  batch-updates:
+    enabled: true
+    batch-size: 20
+    update-interval: 5
+
+debug:
+  debug-detection: false
+  log-changes: true
+  test-mode: false

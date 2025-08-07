@@ -45,6 +45,16 @@ class RemmyChatPlaceholders(private val plugin: RemmyChat) : PlaceholderExpansio
                 return plugin.configManager.defaultChannel?.name ?: ""
             }
 
+            "channel_display" -> {
+                if (player.isOnline) {
+                    val user = plugin.chatService.getChatUser(player.uniqueId) ?: return ""
+                    val channel = plugin.configManager.getChannel(user.currentChannel)
+                    return channel?.displayName ?: user.currentChannel
+                }
+                val defaultChannel = plugin.configManager.defaultChannel
+                return defaultChannel?.displayName ?: defaultChannel?.name ?: ""
+            }
+
             "group" -> {
                 if (plugin.permissionService.isLuckPermsHooked && player.isOnline) {
                     val onlinePlayer = player.player

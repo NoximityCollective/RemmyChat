@@ -1,0 +1,242 @@
+# Channel Configuration
+# Define chat channels with permissions and behaviors
+
+channels:
+  global:
+    enabled: true
+    permission: ""
+    radius: -1
+    display-name: ""
+    description: "Global chat for all players"
+    cross-server: true
+    local-only: false
+    format: "%player_display_name% <dark_gray>»</dark_gray> %message%"
+    hover-template: "player-info"
+    features:
+      url-detection: true
+      mention-system: true
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 30
+      cooldown: 3
+      max-length: 256
+      spam-protection: true
+
+  local:
+    enabled: true
+    permission: "remmychat.channel.local"
+    radius: 100
+    display-name: "<gray>[Local]</gray>"
+    description: "Chat with nearby players"
+    cross-server: false
+    local-only: true
+    format: "<gray>[Local]</gray> %player_display_name% <dark_gray>»</dark_gray> %message%"
+    hover-template: "local-chat"
+    features:
+      url-detection: true
+      mention-system: false
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 60
+      cooldown: 1
+      max-length: 200
+      spam-protection: true
+
+  staff:
+    enabled: true
+    permission: "remmychat.channel.staff"
+    radius: -1
+    display-name: "<gold>[Staff]</gold>"
+    description: "Staff communication"
+    cross-server: true
+    local-only: false
+    format: "<gold>[Staff]</gold> %player_display_name% <dark_gray>»</dark_gray> <gold>%message%</gold>"
+    hover-template: "staff-chat"
+    features:
+      url-detection: true
+      mention-system: true
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 120
+      cooldown: 0
+      max-length: 512
+      spam-protection: false
+    staff-features:
+      bypass-filters: true
+      see-all-channels: true
+      cross-server-priority: true
+
+  trade:
+    enabled: true
+    permission: "remmychat.channel.trade"
+    radius: -1
+    display-name: "<green>[Trade]</green>"
+    description: "Marketplace for trading"
+    cross-server: true
+    local-only: false
+    format: "<green>[Trade]</green> %player_display_name% <dark_gray>»</dark_gray> %message%"
+    hover-template: "trade-chat"
+    features:
+      url-detection: false
+      mention-system: true
+      emoji-support: false
+      placeholder-parsing: false
+    moderation:
+      rate-limit: 10
+      cooldown: 10
+      max-length: 150
+      spam-protection: true
+    trade-features:
+      require-keywords: true
+      price-detection: true
+      item-linking: true
+      auto-expire: 3600
+
+  admin:
+    enabled: true
+    permission: "remmychat.channel.admin"
+    radius: -1
+    display-name: "<red>[Admin]</red>"
+    description: "Administrator communication"
+    cross-server: true
+    local-only: false
+    format: "<red>[Admin]</red> %player_display_name% <dark_gray>»</dark_gray> <red>%message%</red>"
+    hover-template: "admin-chat"
+    features:
+      url-detection: true
+      mention-system: true
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 0
+      cooldown: 0
+      max-length: 1024
+      spam-protection: false
+    admin-features:
+      bypass-all-filters: true
+      see-all-messages: true
+      moderate-all-channels: true
+      cross-server-admin-tools: true
+
+  help:
+    enabled: true
+    permission: "remmychat.channel.help"
+    radius: -1
+    display-name: "<aqua>[Help]</aqua>"
+    description: "Support and assistance"
+    cross-server: true
+    local-only: false
+    format: "<aqua>[Help]</aqua> %player_display_name% <dark_gray>»</dark_gray> %message%"
+    hover-template: "help-chat"
+    features:
+      url-detection: true
+      mention-system: true
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 20
+      cooldown: 5
+      max-length: 300
+      spam-protection: true
+    help-features:
+      auto-notify-staff: true
+      ticket-system: false
+      faq-integration: true
+
+  event:
+    enabled: true
+    permission: "remmychat.channel.event"
+    radius: -1
+    display-name: "<light_purple>[Event]</light_purple>"
+    description: "Server events and announcements"
+    cross-server: true
+    local-only: false
+    format: "<light_purple>[Event]</light_purple> %player_display_name% <dark_gray>»</dark_gray> <light_purple>%message%</light_purple>"
+    hover-template: "event-chat"
+    features:
+      url-detection: true
+      mention-system: true
+      emoji-support: true
+      placeholder-parsing: true
+    moderation:
+      rate-limit: 15
+      cooldown: 8
+      max-length: 200
+      spam-protection: true
+    event-features:
+      announcement-mode: false
+      auto-broadcast: false
+      scheduled-messages: true
+
+channel-groups:
+  public:
+    channels: ["global", "local", "trade", "help", "event"]
+    description: "Public channels"
+  staff:
+    channels: ["staff", "admin"]
+    description: "Staff channels"
+  moderated:
+    channels: ["trade", "help", "event"]
+    description: "Moderated channels"
+
+auto-join:
+  new-players: ["global", "local"]
+  permission-based:
+    "remmychat.channel.staff": ["staff"]
+    "remmychat.channel.admin": ["admin"]
+    "remmychat.channel.trade": ["trade"]
+
+switching:
+  enabled: true
+  command: "/ch"
+  aliases: ["/channel", "/c"]
+  quick-switch:
+    enabled: true
+    "1": "global"
+    "2": "local"
+    "3": "staff"
+    "4": "trade"
+    "5": "help"
+  remember-channel: true
+  show-list: true
+
+notifications:
+  join-leave:
+    enabled: false
+    format: "<gray>%player% joined %channel%</gray>"
+  mentions:
+    enabled: true
+    format: "<yellow>Mentioned in %channel% by %player%</yellow>"
+    sound: "BLOCK_NOTE_BLOCK_PLING"
+  staff-alerts:
+    enabled: true
+    keywords: ["grief", "hack", "cheat", "bug", "issue"]
+    format: "<red>[Alert]</red> Keyword detected in %channel%: %message%"
+
+history:
+  enabled: true
+  max-messages: 100
+  retention: 24
+  player-access: true
+  command: "/ch history"
+
+advanced:
+  aliases:
+    g: "global"
+    l: "local"
+    s: "staff"
+    t: "trade"
+    h: "help"
+    a: "admin"
+    e: "event"
+  passwords:
+    enabled: false
+  capacity:
+    enabled: false
+  scheduling:
+    enabled: false
+  rewards:
+    enabled: false

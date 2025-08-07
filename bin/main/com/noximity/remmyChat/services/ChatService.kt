@@ -2,57 +2,65 @@ package com.noximity.remmyChat.services
 
 import com.noximity.remmyChat.RemmyChat
 import com.noximity.remmyChat.models.ChatUser
-import java.util.*
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class ChatService(private val plugin: RemmyChat) {
-    private val chatUsers: MutableMap<UUID?, ChatUser> = HashMap<UUID?, ChatUser>()
+    private val chatUsers = ConcurrentHashMap<UUID, ChatUser>()
 
-    fun getChatUser(uuid: UUID?): ChatUser? {
-        return chatUsers.computeIfAbsent(uuid) { id: UUID? ->
-            val defaultChannel = plugin.getConfigManager().getDefaultChannel().getName()
-            plugin.getDatabaseManager().loadUserPreferences(id, defaultChannel)
+    fun getChatUser(uuid: UUID): ChatUser? {
+        return chatUsers[uuid] ?: run {
+            val defaultChannel = plugin.configManager.defaultChannel?.name ?: "global"
+            val user = plugin.databaseManager.loadUserPreferences(uuid, defaultChannel) ?: ChatUser(uuid, defaultChannel)
+            chatUsers[uuid] = user
+            user
         }
     }
 
     fun createChatUser(uuid: UUID) {
         if (!chatUsers.containsKey(uuid)) {
-            val defaultChannel = plugin.getConfigManager().getDefaultChannel().getName()
-            val user = plugin.getDatabaseManager().loadUserPreferences(uuid, defaultChannel)
-            chatUsers.put(uuid, user!!)
+            val defaultChannel = plugin.configManager.defaultChannel?.name ?: "global"
+            val user = plugin.databaseManager.loadUserPreferences(uuid, defaultChannel)
+            if (user != null) {
+                chatUsers[uuid] = user
+            }
         }
     }
 
-    fun removeChatUser(uuid: UUID?) {
-        if (chatUsers.containsKey(uuid)) {
-            plugin.getDatabaseManager().saveUserPreferences(chatUsers.get(uuid))
+    fun removeChatUser(uuid: UUID) {
+        chatUsers[uuid]?.let { user ->
+            plugin.databaseManager.saveUserPreferences(user)
             chatUsers.remove(uuid)
         }
     }
 
-    fun setChannel(uuid: UUID?, channel: String?): Boolean {
-        if (plugin.getConfigManager().getChannel(channel) == null) {
+    fun setChannel(uuid: UUID, channel: String): Boolean {
+        if (plugin.configManager.getChannel(channel) == null) {
             return false
         }
 
-        getChatUser(uuid)!!.setCurrentChannel(channel)
+        getChatUser(uuid)?.let { it.currentChannel = channel }
         return true
     }
 
     fun saveAllUsers() {
-        val users: MutableList<ChatUser?> = ArrayList<ChatUser?>(chatUsers.values)
+        val users = java.util.ArrayList(chatUsers.values)
         for (user in users) {
-            plugin.getDatabaseManager().saveUserPreferences(user)
+            plugin.databaseManager.saveUserPreferences(user)
         }
     }
 
-    val socialSpyUsers: MutableList<ChatUser?>
-        get() {
-            val spyUsers: MutableList<ChatUser?> = ArrayList<ChatUser?>()
-            for (user in chatUsers.values) {
-                if (user.isSocialSpy()) {
-                    spyUsers.add(user)
-                }
+    fun getSocialSpyUsers(): List<ChatUser> {
+        val spyUsers = java.util.ArrayList<ChatUser>()
+        for (user in chatUsers.values) {
+            if (user.isSocialSpy) {
+                spyUsers.add(user)
             }
-            return spyUsers
         }
+        return spyUsers
+    }
+
+    fun getChannels(): Map<String, com.noximity.remmyChat.models.Channel> {
+        return plugin.configManager.channels
+    }
 }

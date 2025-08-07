@@ -2,7 +2,7 @@
 
 **RemmyChat** is a lightweight, feature-rich chat management solution for PaperMC servers that enhances player communication with a clean, modern design.
 
-<img src="https://img.shields.io/badge/Version-1.4.6-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.8-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation"></a>
+<img src="https://img.shields.io/badge/Version-2.0.0-green" alt="Version"> <img src="https://img.shields.io/badge/License-GPL--3.0-orange" alt="License"> <img src="https://img.shields.io/badge/Supporterd MC Version-1.21.8-aqua" alt="Supporterd MC Version"> <a href="https://remmychat.noximity.com"><img src="https://img.shields.io/badge/Documentation-Wiki-brightgreen" alt="Documentation"></a>
 
 ## Overview
 
@@ -18,6 +18,7 @@ RemmyChat transforms your server's communication with a sleek, modern interface 
 - **Private Messaging System** — Seamless player-to-player communication with reply functionality
 - **Message Toggle** — Allow players to enable/disable private messages
 - **Social Spy** — Staff monitoring of player private messages
+- **Blocked Server Management** — Prevent specific servers from participating in network chat
 - **Flexible Permission System** — Granular control over all plugin features and channels
 - **Group-Based Formatting** — Different chat formats based on player permissions
 - **Custom Placeholders** — Create reusable text elements for consistency across formats
@@ -29,6 +30,8 @@ RemmyChat transforms your server's communication with a sleek, modern interface 
 - **Message Persistence** — Database storage for player preferences and chat history
 - **PlaceholderAPI Integration** — Unlimited customization possibilities
 - **LuckPerms Integration** — Seamless permission management
+- **DiscordSRV Integration** — Native Discord channel mapping and bidirectional communication
+- **Network User Sync** — Synchronize user preferences across all servers in your network
 - **Optimized Performance** — Minimal resource usage even on busy servers
 
 ![Features Image](https://cdn.modrinth.com/data/kcImu7Wi/images/1155be08ccbcc31c638d9daedcc38b8e581c200e.jpeg)
@@ -58,12 +61,18 @@ You can add as many codes as you want. The replacement can be any string, emoji,
 
 ## Getting Started
 
-Installation is straightforward:
+### Single Server Installation
 
-1. Download the latest RemmyChat release
+1. Download `remmychat-2.0.0-paper.jar` from the latest release
 2. Place the JAR file in your server's `plugins` folder
 3. Restart your server
 4. Configuration files will be generated automatically
+
+### Single Server Installation
+
+1. Download `remmychat-2.0.0.jar` and place it in your server's `plugins` folder
+2. Restart your server
+3. Configure channels and groups as needed (see Configuration section)
 
 For detailed setup instructions and advanced configuration, visit our [official documentation](https://remmychat.noximity.com).
 
@@ -130,6 +139,27 @@ templates:
     admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
 ```
 
+### Channel Configuration
+
+```yaml
+# Channel settings
+channels:
+  global:
+    permission: ""
+    radius: -1
+    display-name: "<gold>[Global]</gold>"
+  
+  local:
+    permission: "remmychat.channel.local"
+    radius: 100
+    display-name: "<gray>[Local]</gray>"
+    
+  staff:
+    permission: "remmychat.channel.staff"
+    radius: -1
+    display-name: "<red>[Staff]</red>"
+```
+
 ![Configuration Image](https://cdn.modrinth.com/data/kcImu7Wi/images/154da5ba69d238aab11a09bb1c795b9e76e24edc.jpeg)
 
 ## Commands
@@ -138,6 +168,7 @@ templates:
 |---------|-------------|------------|
 | `/remchat channel <name>` | Switch between chat channels | `remmychat.use` |
 | `/remchat reload` | Reload plugin configuration | `remmychat.admin` |
+| `/remchat discord` | Manage Discord integration | `remmychat.admin` |
 | `/msg <player> <message>` | Send private message | `remmychat.msg` |
 | `/reply <message>` | Reply to last private message | `remmychat.msg` |
 | `/msgtoggle` | Toggle receiving private messages | `remmychat.msgtoggle` |
@@ -154,12 +185,63 @@ templates:
 | `remmychat.socialspy` | Use social spy feature | `op` |
 | `remmychat.admin` | Administrative access | `op` |
 | `remmychat.channel.<name>` | Access to specific channel | Varies |
+| `remmychat.network.message` | Send messages across network | `true` |
 
 ## Integration
 
 ### PlaceholderAPI
 
 RemmyChat automatically integrates with PlaceholderAPI if installed, allowing you to use any placeholders in your chat formats.
+
+Available RemmyChat placeholders:
+- `%remmychat_channel%` - Current player channel
+- `%remmychat_channel_display%` - Channel display name
+- `%remmychat_msgtoggle%` - Private message toggle status
+- `%remmychat_socialspy%` - Social spy status
+- `%remmychat_group%` - Player's permission group
+
+### DiscordSRV Integration
+
+RemmyChat provides native DiscordSRV integration for seamless Discord-Minecraft communication:
+
+#### Features:
+- **Automatic Channel Mapping** - Map RemmyChat channels to Discord channels
+- **Bidirectional Communication** - Messages flow both ways between Discord and Minecraft
+- **Channel Detection** - DiscordSRV can automatically detect which channel a player is in
+- **Permission-based Access** - Respects RemmyChat channel permissions
+
+#### Configuration:
+```yaml
+# Discord integration settings (requires DiscordSRV)
+discord-integration:
+  enabled: true
+  
+  # Channel mappings - map RemmyChat channels to Discord channels
+  channel-mappings:
+    global: "general"
+    staff: "staff"
+    trade: "trade"
+    local: "local"
+  
+  # Message formatting
+  minecraft-to-discord-format: "**%player%** (%channel%): %message%"
+  discord-to-minecraft-format: "<blue>[Discord]</blue> <gray>%username%</gray>: %message%"
+```
+
+#### DiscordSRV Configuration:
+Use RemmyChat's channel placeholders in your DiscordSRV config:
+```yaml
+# Use RemmyChat channel detection
+DiscordChatChannelMinecraftToDiscord: "**%remmychat_channel%** %displayname%: %message%"
+
+# Map channels to Discord channel IDs
+Channels:
+  "global": "123456789012345678"
+  "staff": "234567890123456789"
+  "trade": "345678901234567890"
+```
+
+For detailed setup instructions, see `DISCORDSRV_INTEGRATION.md`.
 
 ### Message Placeholder Parsing
 
@@ -209,18 +291,20 @@ When LuckPerms is detected, RemmyChat can use permission groups for chat formatt
 
 This project uses Gradle for building and requires Java 21 or higher.
 
-To build:
+To build all platform JARs:
 
 ```sh
 ./gradlew build
 ```
 
-The output JAR will be in the `build/libs` directory.
+The output JARs will be in the `build/libs` directory:
+- `remmychat-2.0.0-paper.jar` - For Paper/Spigot servers
+- `remmychat-2.0.0.jar` - Main build for Paper servers
 
 ## Support & Development
 
 - **Documentation**: [remmychat.noximity.com](https://remmychat.noximity.com)
 - **Website**: [noximity.com](https://noximity.com)
 - **Issues & Feature Requests**: Please use our GitHub issues tracker
-- **Version**: 1.4.6
+- **Version**: 2.0.0
 - **License**: GPL-3.0

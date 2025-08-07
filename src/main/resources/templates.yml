@@ -1,0 +1,461 @@
+# Templates Configuration
+# Reusable formatting templates and placeholders
+
+placeholders:
+  formatted-message: "<white>%message%</white>"
+  player-name: "<aqua>%player_name%</aqua>"
+  display-name: "%player_displayname%"
+  clickable-name: "<click:suggest_command:'/msg %player_name%'>%player_name%</click>"
+  server-name: "<yellow>%server%</yellow>"
+  server-prefix: "<gray>[%server%]</gray>"
+  timestamp: "<gray>[%time%]</gray>"
+  date-stamp: "<dark_gray>%date%</dark_gray>"
+  separator: "<dark_gray>»</dark_gray>"
+  arrow: "<gray>→</gray>"
+  bullet: "<gray>•</gray>"
+  divider: "<strikethrough>                    </strikethrough>"
+  owner-prefix: "<bold><gradient:#FF0000:#FFAA00>[OWNER]</gradient></bold>"
+  admin-prefix: "<bold><color:#CC44FF>[ADMIN]</color></bold>"
+  mod-prefix: "<bold><color:#33CCFF>[MOD]</color></bold>"
+  vip-prefix: "<bold><color:#FFCC00>[VIP]</color></bold>"
+  member-prefix: "<gray>[Member]</gray>"
+  default-message: "<white>%message%</white>"
+  clean-message: "<reset>%message%</reset>"
+  safe-message: "%message%"
+  dynamic-group-format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'%group_display_name%'>%group_prefix%</hover></click> %player_name%: %default-message%"
+  group_display_name: "Player"
+  hover-info: "<hover:show_text:'%hover_text%'>%content%</hover>"
+  click-command: "<click:run_command:'%command%'>%content%</click>"
+  click-suggest: "<click:suggest_command:'%command%'>%content%</click>"
+  click-url: "<click:open_url:'%url%'>%content%</click>"
+  heart: "<red>❤</red>"
+  star: "<yellow>⭐</yellow>"
+  diamond: "<aqua>💎</aqua>"
+  fire: "<gold>🔥</gold>"
+  laugh: "<yellow>😂</yellow>"
+  thumbs-up: "<green>👍</green>"
+  thinking: "<gray>🤔</gray>"
+  magic: "<light_purple>✨</light_purple>"
+  shrug: "<gray>¯\\_(ツ)_/¯</gray>"
+  check: "<green>✓</green>"
+  cross: "<red>✗</red>"
+  warning: "<yellow>⚠</yellow>"
+  info: "<blue>ℹ</blue>"
+  rainbow-text: "<rainbow>%text%</rainbow>"
+  gradient-gold: "<gradient:gold:yellow>%text%</gradient>"
+  gradient-ocean: "<gradient:#00C9FF:#92FE9D>%text%</gradient>"
+  gradient-sunset: "<gradient:#FF512F:#F09819>%text%</gradient>"
+  gradient-purple: "<gradient:#667eea:#764ba2>%text%</gradient>"
+  welcome: "<green>Welcome</green>"
+  goodbye: "<yellow>Goodbye</yellow>"
+  online: "<green>Online</green>"
+  offline: "<gray>Offline</gray>"
+  joined: "<green>joined</green>"
+  left: "<red>left</red>"
+  level: "<yellow>Level %level%</yellow>"
+  coins: "<gold>%coins% coins</gold>"
+  points: "<blue>%points% points</blue>"
+  kills: "<red>%kills% kills</red>"
+  deaths: "<dark_red>%deaths% deaths</dark_red>"
+  afk-status: "<gray>[AFK]</gray>"
+  busy-status: "<yellow>[Busy]</yellow>"
+  streaming-status: "<light_purple>[Streaming]</light_purple>"
+  building-status: "<blue>[Building]</blue>"
+  gg: "<gradient:green:lime><bold>GG!</bold></gradient>"
+  lol: "<italic><yellow>LOL</yellow></italic>"
+  nice: "<gradient:blue:cyan>Nice!</gradient>"
+  wow: "<gradient:yellow:gold>WOW!</gradient>"
+  rip: "<dark_red>RIP</dark_red>"
+  f: "<dark_gray>F</dark_gray>"
+
+templates:
+  hovers:
+    player-info: "<gray>Player information\n<white>Name: <gray>%player_name%\n<white>Click to message"
+    vip-player: "VIP Player"
+    staff-member: "Staff Member"
+    admin-player: "Administrator"
+    owner-player: "Server Owner"
+  name-styles:
+    default: "<aqua>%player_name%"
+    owner: "<bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold>"
+    admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
+    moderator: "<bold><color:#33CCFF>%player_name%</color></bold>"
+    vip: "<bold><color:#FFCC00>%player_name%</color></bold>"
+    member: "<gray>%player_name%</gray>"
+  click-actions:
+    message-player: "<click:suggest_command:'/msg %player_name%'>%content%</click>"
+    run-command: "<click:run_command:'%command%'>%content%</click>"
+    open-url: "<click:open_url:'%url%'>%content%</click>"
+  group-click-actions:
+    owner-name-click: "<click:run_command:'/msg %player_name%'><hover:show_text:'Server Owner'>%player_name%</hover></click>"
+    admin-name-click: "<click:run_command:'/teleport %player_name%'><hover:show_text:'Administrator'>%player_name%</hover></click>"
+    mod-name-click: "<click:suggest_command:'/report %player_name%'><hover:show_text:'Moderator'>%player_name%</hover></click>"
+    vip-name-click: "<click:suggest_command:'/pay %player_name%'><hover:show_text:'VIP Player'>%player_name%</hover></click>"
+    donor-name-click: "<click:suggest_command:'/thank %player_name%'><hover:show_text:'Donor'>%player_name%</hover></click>"
+    member-name-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Member'>%player_name%</hover></click>"
+    owner-prefix-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Server Owner'>[OWNER]</hover></click>"
+    admin-prefix-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Administrator'>[ADMIN]</hover></click>"
+    mod-prefix-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Moderator'>[MOD]</hover></click>"
+    vip-prefix-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'VIP Player'>[VIP]</hover></click>"
+    donor-prefix-click: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Donor'>[DONOR]</hover></click>"
+
+group-placeholders:
+  owner-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Server Owner'>%owner-prefix%</hover></click>"
+  admin-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Administrator'>%admin-prefix%</hover></click>"
+  mod-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Moderator'>%mod-prefix%</hover></click>"
+  vip-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'VIP Player'>%vip-prefix%</hover></click>"
+  member-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Member'>%member-prefix%</hover></click>"
+  default-prefix-interactive: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Player'>%player_name%</hover></click>"
+
+hover-templates:
+  player-info: |
+    <gray>Player Information
+    <white>Name: <gray>%player_name%
+    <white>Rank: <gray>%player_group%
+    <white>Online: <gray>%player_online_time%
+    <white>Server: <gray>%player_server%
+
+    <dark_gray>Click to send a message
+
+  channel-info: |
+    <gray>Channel Information
+    <white>Channel: <gray>%channel_name%
+    <white>Members: <gray>%channel_members%
+    <white>Type: <gray>%channel_type%
+
+    <dark_gray>Click to join this channel
+
+  local-chat: |
+    <gray>Local Chat
+    <white>Range: <gray>100 blocks
+    <white>Players nearby: <gray>%nearby_players%
+
+    <dark_gray>Messages only visible to nearby players
+
+  staff-chat: |
+    <gray>Staff Communication
+    <white>Private staff channel
+    <white>Cross-server: <gray>Yes
+    <white>Online staff: <gray>%online_staff%
+
+    <dark_gray>Staff-only communication channel
+
+  trade-chat: |
+    <gray>Trade Channel
+    <white>Buy and sell items
+    <white>Network-wide: <gray>Yes
+
+    <dark_gray>Use WTS/WTB/WTT prefixes
+
+  admin-chat: |
+    <gray>Administrator Channel
+    <white>Private admin communication
+    <white>Cross-server: <gray>Yes
+    <white>Priority: <gray>Highest
+
+    <dark_gray>Administrator-only channel
+
+  help-chat: |
+    <gray>Help Channel
+    <white>Get help from staff and players
+    <white>Auto-notify staff: <gray>Yes
+
+    <dark_gray>Ask questions and get help
+
+  event-chat: |
+    <gray>Event Channel
+    <white>Server events and announcements
+    <white>Network-wide: <gray>Yes
+
+    <dark_gray>Special events and announcements
+
+  cross-server: |
+    <gray>Cross-Server Message
+    <white>From: <gray>%source_server%
+    <white>Channel: <gray>%channel%
+    <white>Time: <gray>%timestamp%
+
+    <dark_gray>Message sent across the network
+
+  muted-player: |
+    <gray>Muted Player
+    <white>This player is currently muted
+    <white>Reason: <gray>%mute_reason%
+    <white>Expires: <gray>%mute_expiry%
+
+  social-spy: |
+    <gray>Social Spy
+    <white>Private message intercepted
+    <white>From: <gray>%sender%
+    <white>To: <gray>%receiver%
+
+    <dark_gray>You are monitoring private messages
+
+  owner-hover: |
+    <gray>Server Owner
+    <white>Name: <gray>%player_name%
+    <white>Rank: <gradient:#FF0000:#FFAA00>Owner</gradient>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+  admin-hover: |
+    <gray>Administrator
+    <white>Name: <gray>%player_name%
+    <white>Rank: <color:#CC44FF>Administrator</color>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+  moderator-hover: |
+    <gray>Moderator
+    <white>Name: <gray>%player_name%
+    <white>Rank: <color:#33CCFF>Moderator</color>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+  vip-hover: |
+    <gray>VIP Player
+    <white>Name: <gray>%player_name%
+    <white>Rank: <color:#FFCC00>VIP</color>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+  donor-hover: |
+    <gray>Donor
+    <white>Name: <gray>%player_name%
+    <white>Rank: <color:#90EE90>Donor</color>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+  member-hover: |
+    <gray>Member
+    <white>Name: <gray>%player_name%
+    <white>Rank: <gray>Member</gray>
+    <white>Online: <gray>%player_online_time%
+
+    <dark_gray>Click to send a message
+
+message-formats:
+  default-chat: "%player_display_name% %separator% %formatted-message%"
+  simple-chat: "<%player_name%> %message%"
+  clean-chat: "%player_name%: %message%"
+  global-chat: "%player_display_name% %separator% %formatted-message%"
+  local-chat: "<gray>[Local]</gray> %player_display_name% %separator% %formatted-message%"
+  staff-chat: "<gold>[Staff]</gold> %player_display_name% %separator% <gold>%message%</gold>"
+  admin-chat: "<red>[Admin]</red> %player_display_name% %separator% <red>%message%</red>"
+  trade-chat: "<green>[Trade]</green> %player_display_name% %separator% %formatted-message%"
+  help-chat: "<aqua>[Help]</aqua> %player_display_name% %separator% %formatted-message%"
+  event-chat: "<light_purple>[Event]</light_purple> %player_display_name% %separator% <light_purple>%message%</light_purple>"
+  cross-server-global: "%server-prefix% %player_display_name% %separator% %formatted-message%"
+  cross-server-staff: "<yellow>[%server%]</yellow> <gold>[Staff]</gold> %player_display_name% %separator% <gold>%message%</gold>"
+  cross-server-admin: "<red>[%server%]</red> <red>[Admin]</red> %player_display_name% %separator% <red>%message%</red>"
+  msg-to: "<gray>To <aqua>%target%</aqua>: <white>%message%</white></gray>"
+  msg-from: "<gray>From <aqua>%sender%</aqua>: <white>%message%</white></gray>"
+  msg-spy: "<dark_gray>[Spy] <aqua>%sender%</aqua> %arrow% <aqua>%receiver%</aqua>: <white>%message%</white></dark_gray>"
+  system-info: "<blue>%info%</blue> %message%"
+  system-warning: "<yellow>%warning%</yellow> %message%"
+  system-error: "<red>%cross%</red> %message%"
+  system-success: "<green>%check%</green> %message%"
+  player-join: "<green>%player_name% %joined% the server</green>"
+  player-leave: "<yellow>%player_name% %left% the server</yellow>"
+  server-join: "<green>%player_name% %joined% %server-name%</green>"
+  server-leave: "<yellow>%player_name% %left% %server-name%</yellow>"
+  first-join: "<gradient:green:yellow>Welcome %player_name% to the server</gradient>"
+  milestone-join: "<rainbow>%player_name% is our %milestone%th player</rainbow>"
+  staff-join: "<gold>Staff member %player_name% is now online</gold>"
+  vip-join: "<yellow>VIP %player_name% has joined the server</yellow>"
+
+components:
+  clickable-player-name:
+    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'%hover_text%'>%player_display_name%</hover></click>"
+    hover: "player-info"
+  staff-player-name:
+    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'%hover_text%'>%admin-prefix% %player_display_name%</hover></click>"
+    hover: "player-info"
+  channel-prefix:
+    global: ""
+    local: "<gray>[Local]</gray>"
+    staff: "<gold>[Staff]</gold>"
+    admin: "<red>[Admin]</red>"
+    trade: "<green>[Trade]</green>"
+    help: "<aqua>[Help]</aqua>"
+    event: "<light_purple>[Event]</light_purple>"
+  server-badge:
+    format: "<click:run_command:'/server %server%'><hover:show_text:'Click to connect to %server%'>%server-prefix%</hover></click>"
+  time-stamp:
+    format: "<hover:show_text:'%full_date%'>%timestamp%</hover>"
+  online-indicator: "<green>●</green>"
+  offline-indicator: "<gray>●</gray>"
+  busy-indicator: "<yellow>●</yellow>"
+  afk-indicator: "<red>●</red>"
+
+rank-templates:
+  owner:
+    name-format: "<bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold>"
+    prefix: "%owner-prefix%"
+    chat-format: "%prefix% %name-format% %separator% %formatted-message%"
+    hover: "player-info"
+  admin:
+    name-format: "<italic><color:#CC44FF>%player_name%</color></italic>"
+    prefix: "%admin-prefix%"
+    chat-format: "%prefix% %name-format% %separator% %formatted-message%"
+    hover: "player-info"
+  moderator:
+    name-format: "<underlined><color:#33CCFF>%player_name%</underlined>"
+    prefix: "%mod-prefix%"
+    chat-format: "%prefix% %name-format% %separator% %formatted-message%"
+    hover: "player-info"
+  vip:
+    name-format: "<color:#FFCC00>%player_name%</color>"
+    prefix: "%vip-prefix%"
+    chat-format: "%prefix% %name-format% %separator% %formatted-message%"
+    hover: "player-info"
+  member:
+    name-format: "%player-name%"
+    prefix: ""
+    chat-format: "%name-format% %separator% %formatted-message%"
+    hover: "player-info"
+  default:
+    name-format: "<gray>%player_name%</gray>"
+    prefix: ""
+    chat-format: "%name-format% %separator% %formatted-message%"
+    hover: "player-info"
+
+conditional-templates:
+  afk-player:
+    condition: "player_afk == true"
+    name-suffix: " %afk-status%"
+    chat-format: "%player_display_name%%name-suffix% %separator% %formatted-message%"
+  muted-player:
+    condition: "player_muted == true"
+    name-suffix: " <red>[MUTED]</red>"
+    hover: "muted-player"
+  first-daily-message:
+    condition: "first_message_today == true"
+    prefix: "<yellow>%star%</yellow> "
+    format: "%prefix%%default_format%"
+  cross-server-message:
+    condition: "is_cross_server == true"
+    server-prefix: "%server-badge% "
+    format: "%server-prefix%%default_format%"
+    hover: "cross-server"
+  mentioned-player:
+    condition: "message_mentions_player == true"
+    highlight: "<yellow><bold>%message%</bold></yellow>"
+    sound: "BLOCK_NOTE_BLOCK_PLING"
+
+animations:
+  rainbow-cycle:
+    frames:
+      - "<red>%text%</red>"
+      - "<gold>%text%</gold>"
+      - "<yellow>%text%</yellow>"
+      - "<green>%text%</green>"
+      - "<aqua>%text%</aqua>"
+      - "<blue>%text%</blue>"
+      - "<light_purple>%text%</light_purple>"
+    speed: 500
+  pulse:
+    frames:
+      - "<bold>%text%</bold>"
+      - "%text%"
+    speed: 1000
+  gradient-shift:
+    frames:
+      - "<gradient:#FF0000:#FFAA00>%text%</gradient>"
+      - "<gradient:#FFAA00:#FFFF00>%text%</gradient>"
+      - "<gradient:#FFFF00:#00FF00>%text%</gradient>"
+      - "<gradient:#00FF00:#00FFFF>%text%</gradient>"
+      - "<gradient:#00FFFF:#0000FF>%text%</gradient>"
+      - "<gradient:#0000FF:#FF00FF>%text%</gradient>"
+      - "<gradient:#FF00FF:#FF0000>%text%</gradient>"
+    speed: 300
+
+seasonal:
+  christmas:
+    active-dates: ["12-01", "12-31"]
+    decorations:
+      tree: "<green>🎄</green>"
+      gift: "<red>🎁</red>"
+      snow: "<white>❄</white>"
+    format: "%tree% %default_format% %gift%"
+  halloween:
+    active-dates: ["10-25", "10-31"]
+    decorations:
+      pumpkin: "<gold>🎃</gold>"
+      ghost: "<white>👻</white>"
+      bat: "<dark_gray>🦇</dark_gray>"
+    format: "%pumpkin% %default_format% %ghost%"
+  new-year:
+    active-dates: ["12-31", "01-02"]
+    decorations:
+      firework: "<rainbow>🎆</rainbow>"
+      party: "<yellow>🎉</yellow>"
+    format: "%firework% %default_format% %party%"
+
+format-builder:
+  components:
+    - "timestamp"
+    - "server-badge"
+    - "channel-prefix"
+    - "rank-prefix"
+    - "player-name"
+    - "separator"
+    - "message"
+    - "status-indicators"
+  examples:
+    minimal: "[player-name] [separator] [message]"
+    standard: "[channel-prefix] [player-name] [separator] [message]"
+    detailed: "[timestamp] [server-badge] [channel-prefix] [rank-prefix] [player-name] [separator] [message]"
+    rich: "[timestamp] [server-badge] [channel-prefix] [rank-prefix] [player-name] [status-indicators] [separator] [message]"
+
+settings:
+  processing:
+    cache-compiled: true
+    cache-size: 200
+    cache-ttl: 3600
+  validation:
+    validate-on-load: true
+    check-circular-refs: true
+    warn-missing-placeholders: true
+  performance:
+    async-processing: true
+    max-processing-time: 100
+    fallback-on-timeout: true
+
+name-style-templates:
+  default: "<aqua>%player_name%"
+  owner: "<bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold>"
+  admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
+  moderator: "<bold><color:#33CCFF>%player_name%</color></bold>"
+  vip: "<bold><color:#FFCC00>%player_name%</color></bold>"
+  member: "<gray>%player_name%</gray>"
+
+group-prefix-templates:
+  owner: "<bold><gradient:#FF0000:#FFAA00>[OWNER]</gradient></bold>"
+  admin: "<bold><color:#CC44FF>[ADMIN]</color></bold>"
+  moderator: "<bold><color:#33CCFF>[MOD]</color></bold>"
+  vip: "<bold><color:#FFCC00>[VIP]</color></bold>"
+  member: "<gray>[Member]</gray>"
+  default: ""
+
+channel-prefix-templates:
+  global: ""
+  local: "<gray>[Local]</gray>"
+  staff: "<gold>[Staff]</gold>"
+  admin: "<red>[Admin]</red>"
+  trade: "<green>[Trade]</green>"
+  help: "<aqua>[Help]</aqua>"
+  event: "<light_purple>[Event]</light_purple>"
+
+complete-message-formats:
+  owner-format: "%owner-prefix-interactive% %player_name%: %default-message%"
+  admin-format: "%admin-prefix-interactive% %player_name%: %default-message%"
+  mod-format: "%mod-prefix-interactive% %player_name%: %default-message%"
+  vip-format: "%vip-prefix-interactive% %player_name%: %default-message%"
+  member-format: "%member-prefix-interactive% %player_name%: %default-message%"
+  default-format: "%default-prefix-interactive%: %default-message%"

@@ -1,56 +1,59 @@
 package com.noximity.remmyChat
 
-import com.noximity.remmyChat.models.ChatUser
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.OfflinePlayer
-import java.lang.String
-import kotlin.Boolean
 
 class RemmyChatPlaceholders(private val plugin: RemmyChat) : PlaceholderExpansion() {
+
     override fun getIdentifier(): String {
         return "remmychat"
     }
 
     override fun getAuthor(): String {
-        return String.join(", ", plugin.getDescription().getAuthors())
+        return plugin.description.authors.joinToString(", ")
     }
 
-    override fun getVersion(): kotlin.String {
-        return plugin.getDescription().getVersion()
+    override fun getVersion(): String {
+        return plugin.description.version
     }
 
     override fun persist(): Boolean {
         return true // This is required or else PlaceholderAPI will unregister the expansion on reload
     }
 
-    override fun onRequest(player: OfflinePlayer?, params: kotlin.String): kotlin.String? {
+    override fun onRequest(player: OfflinePlayer?, params: String): String? {
         if (player == null) {
             return ""
         }
 
-        if (params.equals("msgtoggle", ignoreCase = true)) {
-            val user: ChatUser = plugin.getChatService().getChatUser(player.getUniqueId())
-            return user.isMsgToggle().toString()
-        }
-
-        if (params.equals("socialspy", ignoreCase = true)) {
-            val user: ChatUser = plugin.getChatService().getChatUser(player.getUniqueId())
-            return user.isSocialSpy().toString()
-        }
-
-        if (params.equals("channel", ignoreCase = true)) {
-            if (player.isOnline()) {
-                val user: ChatUser = plugin.getChatService().getChatUser(player.getUniqueId())
-                return user.getCurrentChannel()
+        when (params.lowercase()) {
+            "msgtoggle" -> {
+                val user = plugin.chatService.getChatUser(player.uniqueId) ?: return ""
+                return user.isMsgToggle.toString()
             }
-            return plugin.getConfigManager().getDefaultChannel().getName()
-        }
 
-        if (params.equals("group", ignoreCase = true) && plugin.getPermissionService().isLuckPermsHooked()) {
-            if (player.isOnline()) {
-                return plugin.getPermissionService().getPrimaryGroup(player.getPlayer())
+            "socialspy" -> {
+                val user = plugin.chatService.getChatUser(player.uniqueId) ?: return ""
+                return user.isSocialSpy.toString()
             }
-            return ""
+
+            "channel" -> {
+                if (player.isOnline) {
+                    val user = plugin.chatService.getChatUser(player.uniqueId) ?: return ""
+                    return user.currentChannel
+                }
+                return plugin.configManager.defaultChannel?.name ?: ""
+            }
+
+            "group" -> {
+                if (plugin.permissionService.isLuckPermsHooked && player.isOnline) {
+                    val onlinePlayer = player.player
+                    if (onlinePlayer != null) {
+                        return plugin.permissionService.getPrimaryGroup(onlinePlayer) ?: ""
+                    }
+                }
+                return ""
+            }
         }
 
         return null

@@ -12,77 +12,97 @@ import org.bukkit.event.player.PlayerQuitEvent
 import java.util.*
 
 class ChatListener(private val plugin: RemmyChat) : Listener {
-    private val cooldowns: MutableMap<UUID?, Long?> = HashMap<UUID?, Long?>()
+    private val cooldowns: MutableMap<UUID, Long> = HashMap()
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onChat(event: AsyncChatEvent) {
-        event.setCancelled(true)
+        event.isCancelled = true
 
-        val player = event.getPlayer()
-
+        val player = event.player
         val rawMessage = PlainTextComponentSerializer.plainText().serialize(event.message())
 
-        if (rawMessage.trim { it <= ' ' }.isEmpty()) {
+        if (rawMessage.trim().isEmpty()) {
             return
         }
 
         // Check cooldown
-        val cooldownTime = plugin.getConfigManager().getCooldown()
+        val cooldownTime = plugin.configManager.cooldown
         if (cooldownTime > 0) {
-            val lastMessageTime = cooldowns.getOrDefault(player.getUniqueId(), 0L)!!
+            val lastMessageTime = cooldowns.getOrDefault(player.uniqueId, 0L)
             val currentTime = System.currentTimeMillis()
 
             if (currentTime - lastMessageTime < cooldownTime * 1000L) {
                 val remainingSeconds = (cooldownTime * 1000L - (currentTime - lastMessageTime)) / 1000
-                player.sendMessage(
-                    plugin.getFormatService().formatSystemMessage(
-                        "cooldown",
-                        Placeholder.parsed("seconds", remainingSeconds.toString())
-                    )
+                val cooldownMsg = plugin.formatService.formatSystemMessage(
+                    "cooldown",
+                    Placeholder.parsed("seconds", remainingSeconds.toString())
                 )
+                if (cooldownMsg != null) {
+                    player.sendMessage(cooldownMsg)
+                } else {
+                    player.sendMessage("Please wait $remainingSeconds seconds before sending another message.")
+                }
                 return
             }
 
-            cooldowns.put(player.getUniqueId(), currentTime)
+            cooldowns[player.uniqueId] = currentTime
         }
 
-        val chatUser = plugin.getChatService().getChatUser(player.getUniqueId())
-        var currentChannel = plugin.getConfigManager().getChannel(chatUser.getCurrentChannel())
+        val chatUser = plugin.chatService.getChatUser(player.uniqueId)
+        if (chatUser == null) {
+            player.sendMessage("Error: Could not load user data!")
+            return
+        }
+
+        var currentChannel = plugin.configManager.getChannel(chatUser.currentChannel)
 
         if (currentChannel == null) {
-            currentChannel = plugin.getConfigManager().getDefaultChannel()
+            currentChannel = plugin.configManager.defaultChannel
             if (currentChannel == null) {
-                player.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-default-channel"))
+                val errorMsg = plugin.formatService.formatSystemMessage("error.no-default-channel")
+                if (errorMsg != null) {
+                    player.sendMessage(errorMsg)
+                } else {
+                    player.sendMessage("No default channel configured!")
+                }
                 return
             }
-            chatUser.setCurrentChannel(currentChannel.getName())
+            chatUser.currentChannel = currentChannel.name ?: "global"
         }
 
         // Check permission for the channel
-        if (currentChannel.getPermission() != null && !currentChannel.getPermission()
-                .isEmpty() && !player.hasPermission(currentChannel.getPermission())
-        ) {
-            player.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"))
+        val permission = currentChannel.permission
+        if (permission != null && permission.isNotEmpty() && !player.hasPermission(permission)) {
+            val errorMsg = plugin.formatService.formatSystemMessage("error.no-permission")
+            if (errorMsg != null) {
+                player.sendMessage(errorMsg)
+            } else {
+                player.sendMessage("You don't have permission to use this channel!")
+            }
             return
         }
 
         // Format the message
-        val formattedMessage = plugin.getFormatService().formatChatMessage(player, currentChannel.getName(), rawMessage)
+        val formattedMessage = plugin.formatService.formatChatMessage(player, currentChannel.name, rawMessage)
+
         // Log the message to console
         val plainMessage = PlainTextComponentSerializer.plainText().serialize(formattedMessage)
-        plugin.getLogger().info(plainMessage)
-        if (currentChannel.getRadius() > 0) {
-            for (recipient in plugin.getServer().getOnlinePlayers()) {
-                if (player.getWorld() == recipient.getWorld() &&
-                    player.getLocation().distance(recipient.getLocation()) <= currentChannel.getRadius()
+        plugin.logger.info(plainMessage)
+
+        if (currentChannel.radius > 0) {
+            // Local channel with radius
+            for (recipient in plugin.server.onlinePlayers) {
+                if (player.world == recipient.world &&
+                    player.location.distance(recipient.location) <= currentChannel.radius
                 ) {
                     recipient.sendMessage(formattedMessage)
                 }
             }
         } else {
-            for (recipient in plugin.getServer().getOnlinePlayers()) {
-                val recipientUser = plugin.getChatService().getChatUser(recipient.getUniqueId())
-                if (recipientUser.getCurrentChannel() == currentChannel.getName()) {
+            // Global channel - send to all players in the same channel
+            for (recipient in plugin.server.onlinePlayers) {
+                val recipientUser = plugin.chatService.getChatUser(recipient.uniqueId)
+                if (recipientUser?.currentChannel == currentChannel.name) {
                     recipient.sendMessage(formattedMessage)
                 }
             }
@@ -91,21 +111,20 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        val player = event.getPlayer()
+        val player = event.player
         // This will now load the saved channel from the database
-        plugin.getChatService().createChatUser(player.getUniqueId())
+        plugin.chatService.createChatUser(player.uniqueId)
     }
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        val player = event.getPlayer()
+        val player = event.player
         // Save user preferences including channel before removing from cache
-        val user = plugin.getChatService().getChatUser(player.getUniqueId())
+        val user = plugin.chatService.getChatUser(player.uniqueId)
         if (user != null) {
-            plugin.getDatabaseManager().saveUserPreferences(user)
+            plugin.databaseManager.saveUserPreferences(user)
         }
-        plugin.getChatService().removeChatUser(player.getUniqueId())
-        cooldowns.remove(player.getUniqueId())
+        plugin.chatService.removeChatUser(player.uniqueId)
+        cooldowns.remove(player.uniqueId)
     }
 }
-

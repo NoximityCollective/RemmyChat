@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets
 
 class Messages(private val plugin: RemmyChat) {
     private var messagesFile: File? = null
-    private var messagesConfig: FileConfiguration? = null
+    private lateinit var messagesConfig: FileConfiguration
 
     init {
         loadMessages()
@@ -18,7 +18,7 @@ class Messages(private val plugin: RemmyChat) {
 
     private fun loadMessages() {
         if (messagesFile == null) {
-            messagesFile = File(plugin.getDataFolder(), "messages.yml")
+            messagesFile = File(plugin.dataFolder, "messages.yml")
         }
 
         if (!messagesFile!!.exists()) {
@@ -28,16 +28,14 @@ class Messages(private val plugin: RemmyChat) {
         messagesConfig = YamlConfiguration.loadConfiguration(messagesFile!!)
 
         try {
-            plugin.getResource("messages.yml").use { defaultStream ->
-                if (defaultStream != null) {
-                    val defaultConfig: YamlConfiguration = YamlConfiguration.loadConfiguration(
-                        InputStreamReader(defaultStream, StandardCharsets.UTF_8)
-                    )
-                    messagesConfig!!.setDefaults(defaultConfig)
-                }
+            plugin.getResource("messages.yml")?.use { defaultStream ->
+                val defaultConfig: YamlConfiguration = YamlConfiguration.loadConfiguration(
+                    InputStreamReader(defaultStream, StandardCharsets.UTF_8)
+                )
+                messagesConfig.setDefaults(defaultConfig)
             }
         } catch (e: IOException) {
-            plugin.getLogger().severe("Could not load default messages.yml: " + e.message)
+            plugin.logger.severe("Could not load default messages.yml: ${e.message}")
         }
     }
 
@@ -45,11 +43,12 @@ class Messages(private val plugin: RemmyChat) {
         loadMessages()
     }
 
-    fun getMessage(path: String): String {
-        return messagesConfig!!.getString(path, "Message not found: " + path)!!
+    fun getMessage(path: String?): String? {
+        if (path == null) return null
+        return messagesConfig.getString(path)
     }
 
     fun getMessagesConfig(): FileConfiguration {
-        return messagesConfig!!
+        return messagesConfig
     }
 }

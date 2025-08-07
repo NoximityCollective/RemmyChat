@@ -12,19 +12,19 @@ import com.noximity.remmyChat.utils.PlaceholderManager
 import org.bukkit.plugin.java.JavaPlugin
 
 class RemmyChat : JavaPlugin() {
-    var configManager: ConfigManager? = null
+    lateinit var configManager: ConfigManager
         private set
-    var messages: Messages? = null
+    lateinit var messages: Messages
         private set
-    var chatService: ChatService? = null
+    lateinit var chatService: ChatService
         private set
-    var formatService: FormatService? = null
+    lateinit var formatService: FormatService
         private set
-    var databaseManager: DatabaseManager? = null
+    lateinit var databaseManager: DatabaseManager
         private set
-    var permissionService: PermissionService? = null
+    lateinit var permissionService: PermissionService
         private set
-    var placeholderManager: PlaceholderManager? = null
+    lateinit var placeholderManager: PlaceholderManager
         private set
     var isProtocolLibEnabled: Boolean = false
         private set
@@ -42,7 +42,7 @@ class RemmyChat : JavaPlugin() {
         this.placeholderManager = PlaceholderManager(this)
 
         // ProtocolLib detection
-        if (getServer().getPluginManager().getPlugin("ProtocolLib") != null) {
+        if (server.pluginManager.getPlugin("ProtocolLib") != null) {
             this.isProtocolLibEnabled = true
             debugLog("ProtocolLib found. Advanced message deletion enabled.")
         } else {
@@ -50,44 +50,46 @@ class RemmyChat : JavaPlugin() {
             debugLog("ProtocolLib not found. Advanced message deletion disabled.")
         }
 
-        getCommand("remchat")!!.setExecutor(ChatCommand(this))
-        getCommand("msg")!!.setExecutor(MessageCommand(this))
-        getCommand("reply")!!.setExecutor(ReplyCommand(this))
-        getCommand("msgtoggle")!!.setExecutor(MsgToggleCommand(this))
-        getCommand("socialspy")!!.setExecutor(SocialSpyCommand(this))
+        getCommand("remchat")?.setExecutor(ChatCommand(this))
+        getCommand("msg")?.setExecutor(MessageCommand(this))
+        getCommand("reply")?.setExecutor(ReplyCommand(this))
+        getCommand("msgtoggle")?.setExecutor(MsgToggleCommand(this))
+        getCommand("socialspy")?.setExecutor(SocialSpyCommand(this))
 
-        getServer().getPluginManager().registerEvents(ChatListener(this), this)
+        server.pluginManager.registerEvents(ChatListener(this), this)
 
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            getLogger().info("PlaceholderAPI found and hooked!")
+        if (server.pluginManager.getPlugin("PlaceholderAPI") != null) {
+            logger.info("PlaceholderAPI found and hooked!")
             RemmyChatPlaceholders(this).register()
         } else {
-            getLogger().warning("PlaceholderAPI not found! Placeholders will not work.")
+            logger.warning("PlaceholderAPI not found! Placeholders will not work.")
         }
 
-        getLogger().info("RemmyChat has been enabled!")
+        logger.info("RemmyChat has been enabled!")
     }
 
     override fun onDisable() {
-        if (chatService != null) {
-            chatService!!.saveAllUsers()
+        if (::chatService.isInitialized) {
+            chatService.saveAllUsers()
         }
 
-        if (databaseManager != null) {
-            databaseManager!!.close()
+        if (::databaseManager.isInitialized) {
+            databaseManager.close()
         }
 
-        getLogger().info("RemmyChat has been disabled!")
+        logger.info("RemmyChat has been disabled!")
     }
 
-    fun debugLog(message: String?) {
-        if (getConfig().getBoolean("debug.enabled", false)) {
-            getLogger().info("[DEBUG] " + message)
+    fun debugLog(message: String) {
+        if (config.getBoolean("debug.enabled", false)) {
+            logger.info("[DEBUG] $message")
         }
     }
+
+
 
     companion object {
-        var instance: RemmyChat? = null
+        lateinit var instance: RemmyChat
             private set
     }
 }

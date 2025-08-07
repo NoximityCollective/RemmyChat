@@ -11,4 +11,6 @@ class Channel(
     fun hasDisplayName(): Boolean {
         return displayName != null && !displayName.isEmpty()
     }
+
+
 }

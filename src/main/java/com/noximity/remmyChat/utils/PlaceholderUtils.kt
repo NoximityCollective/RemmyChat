@@ -8,8 +8,14 @@ object PlaceholderUtils {
     val isPlaceholderApiEnabled: Boolean = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null
 
     fun applyPlaceholders(player: Player?, text: String): String? {
-        if (isPlaceholderApiEnabled && player != null) {
-            return PlaceholderAPI.setPlaceholders(player, text)
+        try {
+            if (isPlaceholderApiEnabled && player != null) {
+                return PlaceholderAPI.setPlaceholders(player, text)
+            }
+        } catch (e: NoClassDefFoundError) {
+            // PlaceholderAPI classes not available, skip PAPI processing
+        } catch (e: Exception) {
+            // Other PlaceholderAPI error, skip PAPI processing
         }
         return text
     }

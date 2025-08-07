@@ -63,4 +63,21 @@ class ChatService(private val plugin: RemmyChat) {
     fun getChannels(): Map<String, com.noximity.remmyChat.models.Channel> {
         return plugin.configManager.channels
     }
+
+    fun getUser(uuid: UUID): ChatUser? {
+        return getChatUser(uuid)
+    }
+
+    fun getUser(player: org.bukkit.entity.Player): ChatUser? {
+        return getChatUser(player.uniqueId)
+    }
+
+    fun getServerName(): String {
+        return plugin.configManager.serverName.ifEmpty { "local" }
+    }
+
+    fun clearOldCachedData() {
+        // Clear old cached data - implementation can be expanded as needed
+        plugin.debugLog("Clearing old cached data from ChatService")
+    }
 }

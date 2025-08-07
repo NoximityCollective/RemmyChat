@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '8.3.6'
     id 'org.jetbrains.kotlin.jvm' version '2.2.0'
 }
 
@@ -10,6 +10,16 @@ archivesBaseName = 'remmychat'
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+compileJava {
+    options.release = 21
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "21"
+    }
 }
 
 repositories {
@@ -30,27 +40,60 @@ repositories {
         name = 'luckperms'
         url = 'https://repo.lucko.me/'
     }
+    maven {
+        name = 'codemc-repo'
+        url = 'https://repo.codemc.org/repository/maven-public/'
+    }
+}
+
+
+
+repositories {
+    maven {
+        name = 'discordsrv'
+        url = 'https://nexus.scarsz.me/content/groups/public/'
+    }
+
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT'
+    // Common dependencies - using 1.21.1 for backward compatibility
+    compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly 'net.luckperms:api:5.4'
+    compileOnly 'com.discordsrv:discordsrv:1.27.0'
+
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    implementation 'redis.clients:jedis:5.1.0'
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
 }
 
 processResources {
     inputs.property "version", project.version
+    inputs.property "apiVersion", "1.21"
     filteringCharset = 'UTF-8'
     filesMatching('plugin.yml') {
-        expand project: project
+        expand project: project, apiVersion: "1.21"
     }
+    filesMatching('paper-plugin.yml') {
+        expand project: project, apiVersion: "1.21"
+    }
+
 }
 
 shadowJar {
     archiveClassifier.set('')
     // minimize()
+
+    // Relocate bStats to avoid conflicts
+    relocate 'org.bstats', 'com.noximity.remmychat.shaded.bstats'
+
+    // Java 21 compatibility
+    zip64 = true
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
 
 jar {
@@ -60,4 +103,12 @@ jar {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-} 
+    options.release = 21
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "21"
+        freeCompilerArgs += ["-Xjvm-default=all"]
+    }
+}

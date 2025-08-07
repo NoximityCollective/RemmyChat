@@ -16,17 +16,17 @@ class PermissionService(private val plugin: RemmyChat) {
 
     private fun hookLuckPerms() {
         try {
-            if (plugin.getServer().getPluginManager().isPluginEnabled("LuckPerms")) {
+            if (plugin.server.pluginManager.isPluginEnabled("LuckPerms")) {
                 // Use reflection to access LuckPerms API to prevent class loading issues when LP is not present
                 val lpProviderClass = Class.forName("net.luckperms.api.LuckPermsProvider")
                 luckPermsApi = lpProviderClass.getMethod("get").invoke(null)
                 this.isLuckPermsHooked = true
-                plugin.getLogger().info("LuckPerms found and hooked successfully!")
+                plugin.logger.info("LuckPerms found and hooked successfully!")
             } else {
-                plugin.getLogger().info("LuckPerms not found, group-based formatting will be disabled.")
+                plugin.logger.info("LuckPerms not found, group-based formatting will be disabled.")
             }
         } catch (e: Exception) {
-            plugin.getLogger().warning("Failed to hook into LuckPerms: " + e.message)
+            plugin.logger.warning("Failed to hook into LuckPerms: ${e.message}")
             this.isLuckPermsHooked = false
         }
     }
@@ -41,16 +41,16 @@ class PermissionService(private val plugin: RemmyChat) {
 
         try {
             // Get the User object using reflection
-            val userManager: Any = luckPermsApi.javaClass.getMethod("getUserManager").invoke(luckPermsApi)
+            val userManager: Any = luckPermsApi!!.javaClass.getMethod("getUserManager").invoke(luckPermsApi)
             val user: Any? = userManager.javaClass.getMethod("getUser", UUID::class.java)
-                .invoke(userManager, player.getUniqueId())
+                .invoke(userManager, player.uniqueId)
 
             if (user == null) return null
 
             // Get the primary group from the User object
             return user.javaClass.getMethod("getPrimaryGroup").invoke(user) as String?
         } catch (e: Exception) {
-            plugin.getLogger().warning("Error getting primary group for " + player.getName() + ": " + e.message)
+            plugin.logger.warning("Error getting primary group for ${player.name}: ${e.message}")
             return null
         }
     }
@@ -61,7 +61,7 @@ class PermissionService(private val plugin: RemmyChat) {
      * @return The group format or null if no matching format found
      */
     fun getHighestGroupFormat(player: Player): GroupFormat? {
-        if (!this.isLuckPermsHooked || !plugin.getConfigManager().isUseGroupFormat()) {
+        if (!this.isLuckPermsHooked || !plugin.configManager.isUseGroupFormat) {
             return null
         }
 
@@ -69,7 +69,7 @@ class PermissionService(private val plugin: RemmyChat) {
             // Get primary group using our method that handles reflection
             val primaryGroup = getPrimaryGroup(player)
             if (primaryGroup != null) {
-                val primaryGroupFormat = plugin.getConfigManager().getGroupFormat(primaryGroup)
+                val primaryGroupFormat = plugin.configManager.getGroupFormat(primaryGroup)
                 // If we have a format for the primary group, use that
                 if (primaryGroupFormat != null) {
                     return primaryGroupFormat
@@ -77,17 +77,19 @@ class PermissionService(private val plugin: RemmyChat) {
             }
 
             // Otherwise check all configured groups by permission
-            for (groupName in plugin.getConfigManager().getGroupFormats().keys) {
+            for (groupName in plugin.configManager.groupFormats.keys) {
                 if (player.hasPermission("group." + groupName)) {
-                    return plugin.getConfigManager().getGroupFormat(groupName)
+                    return plugin.configManager.getGroupFormat(groupName)
                 }
             }
 
             // No matching group format found
             return null
         } catch (e: Exception) {
-            plugin.getLogger().warning("Error getting group format for " + player.getName() + ": " + e.message)
+            plugin.logger.warning("Error getting group format for ${player.name}: ${e.message}")
             return null
         }
     }
+
+
 }

@@ -10,13 +10,13 @@ import kotlin.collections.HashMap
 import kotlin.collections.MutableMap
 
 class ConfigManager(private val plugin: RemmyChat) {
-    private var config: FileConfiguration? = null
-    val channels: MutableMap<String?, Channel?> = HashMap<String?, Channel?>()
-    val groupFormats: MutableMap<String?, GroupFormat?> = HashMap<String?, GroupFormat?>()
-    private val hoverTemplates: MutableMap<String?, String?> = HashMap<String?, String?>()
-    private val channelPrefixTemplates: MutableMap<String?, String?> = HashMap<String?, String?>()
-    private val groupPrefixTemplates: MutableMap<String?, String?> = HashMap<String?, String?>()
-    private val nameStyleTemplates: MutableMap<String?, String?> = HashMap<String?, String?>()
+    private lateinit var config: FileConfiguration
+    val channels: MutableMap<String, Channel> = HashMap<String, Channel>()
+    val groupFormats: MutableMap<String, GroupFormat> = HashMap<String, GroupFormat>()
+    private val hoverTemplates: MutableMap<String, String> = HashMap<String, String>()
+    private val channelPrefixTemplates: MutableMap<String, String> = HashMap<String, String>()
+    private val groupPrefixTemplates: MutableMap<String, String> = HashMap<String, String>()
+    private val nameStyleTemplates: MutableMap<String, String> = HashMap<String, String>()
     var isLinkClickEnabled: Boolean = false
         private set
     var isUseGroupFormat: Boolean = false
@@ -28,7 +28,7 @@ class ConfigManager(private val plugin: RemmyChat) {
     var isDebugEnabled: Boolean = false
         private set
     private var verboseStartup = false
-    val symbolMappings: MutableMap<String?, String?> = HashMap<String?, String?>()
+    val symbolMappings: MutableMap<String, String> = HashMap<String, String>()
 
     init {
         loadConfig()
@@ -36,28 +36,28 @@ class ConfigManager(private val plugin: RemmyChat) {
 
     private fun loadConfig() {
         plugin.saveDefaultConfig()
-        this.config = plugin.getConfig()
+        this.config = plugin.config
 
         // Load debug settings first
-        this.isDebugEnabled = config!!.getBoolean("debug.enabled", false)
+        this.isDebugEnabled = config.getBoolean("debug.enabled", false)
         this.verboseStartup =
-            !config!!.isSet("debug.verbose-startup") ||
-                    config!!.getBoolean("debug.verbose-startup", true)
+            !config.isSet("debug.verbose-startup") ||
+                    config.getBoolean("debug.verbose-startup", true)
 
         loadTemplates()
         loadChannels()
         loadGroupFormats()
         loadUrlFormatting()
         loadSymbols()
-        this.isUseGroupFormat = config!!.getBoolean(
+        this.isUseGroupFormat = config.getBoolean(
             "features.use-group-format",
             true
         )
-        this.isAllowSelfMessaging = config!!.getBoolean(
+        this.isAllowSelfMessaging = config.getBoolean(
             "features.allow-self-messaging",
             false
         )
-        this.chatFormat = config!!.getString(
+        this.chatFormat = config.getString(
             "chat-format",
             "%channel_prefix% %group_prefix%%name%: %message%"
         )
@@ -65,14 +65,14 @@ class ConfigManager(private val plugin: RemmyChat) {
 
     private fun loadTemplates() {
         // Load hover templates
-        val hoversSection = config!!.getConfigurationSection(
+        val hoversSection = config.getConfigurationSection(
             "templates.hovers"
         )
-        if (hoversSection != null) {
-            for (key in hoversSection.getKeys(false)) {
-                val template = hoversSection.getString(key)
+        hoversSection?.let { section ->
+            for (key in section.getKeys(false)) {
+                val template = section.getString(key)
                 if (template != null) {
-                    hoverTemplates.put(key, template)
+                    hoverTemplates[key] = template
                     if (verboseStartup) {
                         plugin.debugLog("Loaded hover template: " + key)
                     }
@@ -82,12 +82,12 @@ class ConfigManager(private val plugin: RemmyChat) {
 
         // Load channel prefix templates
         val channelPrefixesSection =
-            config!!.getConfigurationSection("templates.channel-prefixes")
-        if (channelPrefixesSection != null) {
-            for (key in channelPrefixesSection.getKeys(false)) {
-                val template = channelPrefixesSection.getString(key)
+            config.getConfigurationSection("templates.channel-prefixes")
+        channelPrefixesSection?.let { section ->
+            for (key in section.getKeys(false)) {
+                val template = section.getString(key)
                 if (template != null) {
-                    channelPrefixTemplates.put(key, template)
+                    channelPrefixTemplates[key] = template
                     if (verboseStartup) {
                         plugin.debugLog(
                             "Loaded channel prefix template: " + key
@@ -99,12 +99,12 @@ class ConfigManager(private val plugin: RemmyChat) {
 
         // Load group prefix templates
         val groupPrefixesSection =
-            config!!.getConfigurationSection("templates.group-prefixes")
-        if (groupPrefixesSection != null) {
-            for (key in groupPrefixesSection.getKeys(false)) {
-                val template = groupPrefixesSection.getString(key)
+            config.getConfigurationSection("templates.group-prefixes")
+        groupPrefixesSection?.let { section ->
+            for (key in section.getKeys(false)) {
+                val template = section.getString(key)
                 if (template != null) {
-                    groupPrefixTemplates.put(key, template)
+                    groupPrefixTemplates[key] = template
                     if (verboseStartup) {
                         plugin.debugLog("Loaded group prefix template: " + key)
                     }
@@ -113,14 +113,14 @@ class ConfigManager(private val plugin: RemmyChat) {
         }
 
         // Load name style templates
-        val nameStylesSection = config!!.getConfigurationSection(
+        val nameStylesSection = config.getConfigurationSection(
             "templates.name-styles"
         )
-        if (nameStylesSection != null) {
-            for (key in nameStylesSection.getKeys(false)) {
-                val template = nameStylesSection.getString(key)
+        nameStylesSection?.let { section ->
+            for (key in section.getKeys(false)) {
+                val template = section.getString(key)
                 if (template != null) {
-                    nameStyleTemplates.put(key, template)
+                    nameStyleTemplates[key] = template
                     if (verboseStartup) {
                         plugin.debugLog("Loaded name style template: " + key)
                     }
@@ -130,29 +130,29 @@ class ConfigManager(private val plugin: RemmyChat) {
     }
 
     private fun loadChannels() {
-        val channelsSection = config!!.getConfigurationSection(
+        val channelsSection = config.getConfigurationSection(
             "channels"
         )
         if (channelsSection == null) {
-            plugin.getLogger().warning("No channels configured!")
+            plugin.logger.warning("No channels configured!")
             return
         }
 
         for (key in channelsSection.getKeys(false)) {
-            val permission: String = channelsSection.getString(
+            val permission = channelsSection.getString(
                 key + ".permission",
                 ""
-            )!!
+            ) ?: ""
             val radius = channelsSection.getDouble(key + ".radius", -1.0)
-            val prefix: String = channelsSection.getString(key + ".prefix", "")!!
-            val hover: String = channelsSection.getString(
+            val prefix = channelsSection.getString(key + ".prefix", "") ?: ""
+            val hover = channelsSection.getString(
                 key + ".hover",
                 "player-info"
-            )!!
-            val displayName: String = channelsSection.getString(
+            ) ?: "player-info"
+            val displayName = channelsSection.getString(
                 key + ".display-name",
                 ""
-            )!!
+            ) ?: ""
 
             val channel = Channel(
                 key,
@@ -162,43 +162,39 @@ class ConfigManager(private val plugin: RemmyChat) {
                 hover,
                 displayName
             )
-            channels.put(key, channel)
+            channels[key] = channel
 
             if (verboseStartup) {
-                plugin
-                    .getLogger()
-                    .info(
-                        "Loaded channel: " +
-                                key +
-                                (if (displayName.isEmpty())
-                                    ""
-                                else
-                                    " with display name: " + displayName)
-                    )
+                plugin.logger.info(
+                    "Loaded channel: " +
+                            key +
+                            (if (displayName.isEmpty())
+                                ""
+                            else
+                                " with display name: " + displayName)
+                )
             }
         }
     }
 
     private fun loadGroupFormats() {
-        val groupsSection = config!!.getConfigurationSection(
+        val groupsSection = config.getConfigurationSection(
             "groups"
         )
         if (groupsSection == null) {
-            plugin
-                .getLogger()
-                .info(
-                    "No group formats configured, using default name styles only."
-                )
+            plugin.logger.info(
+                "No group formats configured, using default name styles only."
+            )
             return
         }
 
         for (key in groupsSection.getKeys(false)) {
-            val nameStyle: String = groupsSection.getString(
+            val nameStyle = groupsSection.getString(
                 key + ".name-style",
                 "default"
-            )!!
-            val prefix: String = groupsSection.getString(key + ".prefix", "")!!
-            val format: String = groupsSection.getString(key + ".format", "")!!
+            ) ?: "default"
+            val prefix = groupsSection.getString(key + ".prefix", "") ?: ""
+            val format = groupsSection.getString(key + ".format", "") ?: ""
 
             // Debug information
             if (this.isDebugEnabled || verboseStartup) {
@@ -214,7 +210,7 @@ class ConfigManager(private val plugin: RemmyChat) {
                 prefix,
                 format
             )
-            groupFormats.put(key, groupFormat)
+            groupFormats[key] = groupFormat
 
             if (verboseStartup) {
                 plugin.debugLog("Loaded group format: " + key)
@@ -223,7 +219,7 @@ class ConfigManager(private val plugin: RemmyChat) {
     }
 
     private fun loadUrlFormatting() {
-        this.isLinkClickEnabled = config!!.getBoolean(
+        this.isLinkClickEnabled = config.getBoolean(
             "url-formatting.enabled",
             true
         )
@@ -231,20 +227,18 @@ class ConfigManager(private val plugin: RemmyChat) {
 
     private fun loadSymbols() {
         symbolMappings.clear()
-        val symbolsFile = File(plugin.getDataFolder(), "symbols.yml")
+        val symbolsFile = File(plugin.dataFolder, "symbols.yml")
         if (!symbolsFile.exists()) {
             plugin.saveResource("symbols.yml", false)
         }
         val symbolsConfig: FileConfiguration = YamlConfiguration.loadConfiguration(
             symbolsFile
         )
-        if (symbolsConfig.isConfigurationSection("symbols")) {
-            val section =
-                symbolsConfig.getConfigurationSection("symbols")
-            for (key in section!!.getKeys(false)) {
+        symbolsConfig.getConfigurationSection("symbols")?.let { section ->
+            for (key in section.getKeys(false)) {
                 val value = section.getString(key)
                 if (value != null) {
-                    symbolMappings.put(key, value)
+                    symbolMappings[key] = value
                 }
             }
         }
@@ -252,13 +246,13 @@ class ConfigManager(private val plugin: RemmyChat) {
 
     fun reloadConfig() {
         plugin.reloadConfig()
-        this.config = plugin.getConfig()
+        this.config = plugin.config
 
         // Reload debug settings first
-        this.isDebugEnabled = config!!.getBoolean("debug.enabled", false)
+        this.isDebugEnabled = config.getBoolean("debug.enabled", false)
         this.verboseStartup =
-            !config!!.isSet("debug.verbose-startup") ||
-                    config!!.getBoolean("debug.verbose-startup", true)
+            !config.isSet("debug.verbose-startup") ||
+                    config.getBoolean("debug.verbose-startup", true)
 
         channels.clear()
         groupFormats.clear()
@@ -273,47 +267,47 @@ class ConfigManager(private val plugin: RemmyChat) {
         loadGroupFormats()
         loadUrlFormatting()
         loadSymbols()
-        this.isUseGroupFormat = config!!.getBoolean(
+        this.isUseGroupFormat = config.getBoolean(
             "features.use-group-format",
             true
         )
-        this.isAllowSelfMessaging = config!!.getBoolean(
+        this.isAllowSelfMessaging = config.getBoolean(
             "features.allow-self-messaging",
             false
         )
-        this.chatFormat = config!!.getString(
+        this.chatFormat = config.getString(
             "chat-format",
             "%channel_prefix% %group_prefix%%name%: %message%"
         )
 
         // Reload placeholders
-        plugin.getPlaceholderManager().loadCustomPlaceholders()
+        plugin.placeholderManager.loadCustomPlaceholders()
     }
 
     val isPlayerFormattingAllowed: Boolean
-        get() = config!!.getBoolean("features.player-formatting", false)
+        get() = config.getBoolean("features.player-formatting", false)
 
-    fun getChannel(name: String?): Channel? {
-        return channels.get(name)
+    fun getChannel(name: String): Channel? {
+        return channels[name]
     }
 
-    fun getGroupFormat(name: String?): GroupFormat? {
-        return groupFormats.get(name)
+    fun getGroupFormat(name: String): GroupFormat? {
+        return groupFormats[name]
     }
 
-    fun getHoverTemplate(name: String?): String? {
+    fun getHoverTemplate(name: String): String {
         return hoverTemplates.getOrDefault(name, "")
     }
 
-    fun getChannelPrefixTemplate(name: String?): String? {
+    fun getChannelPrefixTemplate(name: String): String {
         return channelPrefixTemplates.getOrDefault(name, "")
     }
 
-    fun getGroupPrefixTemplate(name: String?): String? {
+    fun getGroupPrefixTemplate(name: String): String {
         return groupPrefixTemplates.getOrDefault(name, "")
     }
 
-    fun getNameStyleTemplate(name: String?): String? {
+    fun getNameStyleTemplate(name: String): String {
         return nameStyleTemplates.getOrDefault(
             name,
             nameStyleTemplates.getOrDefault("default", "<#4A90E2>%player_name%")
@@ -322,43 +316,45 @@ class ConfigManager(private val plugin: RemmyChat) {
 
     val defaultChannel: Channel?
         get() {
-            val defaultChannel = config!!.getString("default-channel")
-            return channels.getOrDefault(defaultChannel, null)
+            val defaultChannelName = config.getString("default-channel")
+            return if (defaultChannelName != null) channels[defaultChannelName] else null
         }
 
+
+
     val isFormatHoverEnabled: Boolean
-        get() = config!!.getBoolean("features.format-hover", true)
+        get() = config.getBoolean("features.format-hover", true)
 
     val cooldown: Int
-        get() = config!!.getInt("chat-cooldown", 0)
+        get() = config.getInt("chat-cooldown", 0)
 
     val isParsePlaceholdersInMessages: Boolean
-        get() = config!!.getBoolean(
+        get() = config.getBoolean(
             "features.parse-placeholders-in-messages",
             false
         )
 
     val isParsePapiPlaceholdersInMessages: Boolean
-        get() = config!!.getBoolean(
+        get() = config.getBoolean(
             "features.parse-papi-placeholders-in-messages",
             false
         )
 
     val deleteButtonText: String
-        get() = config!!.getString("delete-button.text", "<red>❌</red>")!!
+        get() = config.getString("delete-button.text", "<red>❌</red>") ?: "<red>❌</red>"
 
     val deleteButtonHover: String
         get() = config.getString(
             "delete-button.hover",
             "<gray>Delete this message</gray>"
-        )!!
+        ) ?: "<gray>Delete this message</gray>"
 
     val deleteButtonClickMessage: String
         get() = config.getString(
             "delete-button.click-message",
             "<green>Message deleted!</green>"
-        )!!
+        ) ?: "<green>Message deleted!</green>"
 
     val deleteButtonSound: String
-        get() = config!!.getString("delete-button.sound", "")!!
+        get() = config.getString("delete-button.sound", "") ?: ""
 }

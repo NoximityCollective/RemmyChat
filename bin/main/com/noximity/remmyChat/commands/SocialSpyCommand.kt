@@ -7,28 +7,53 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
 class SocialSpyCommand(private val plugin: RemmyChat) : CommandExecutor {
-    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>?): Boolean {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.players-only"))
+            val errorMsg = plugin.formatService.formatSystemMessage("error.players-only")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("This command is for players only!")
+            }
             return true
         }
 
         if (!sender.hasPermission("remmychat.socialspy")) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("error.no-permission"))
+            val errorMsg = plugin.formatService.formatSystemMessage("error.no-permission")
+            if (errorMsg != null) {
+                sender.sendMessage(errorMsg)
+            } else {
+                sender.sendMessage("You don't have permission to use this command!")
+            }
             return true
         }
 
-        val chatUser = plugin.getChatService().getChatUser(sender.getUniqueId())
-        val newState = !chatUser.isSocialSpy()
-        chatUser.setSocialSpy(newState)
+        val chatUser = plugin.chatService.getChatUser(sender.uniqueId)
+        if (chatUser == null) {
+            sender.sendMessage("Error: Could not load user data!")
+            return true
+        }
+
+        val newState = !chatUser.isSocialSpy
+        chatUser.isSocialSpy = newState
 
         // Save the new state to the database
-        plugin.getDatabaseManager().saveUserPreferences(chatUser)
+        plugin.databaseManager.saveUserPreferences(chatUser)
 
         if (newState) {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("socialspy-enabled"))
+            val enabledMsg = plugin.formatService.formatSystemMessage("socialspy-enabled")
+            if (enabledMsg != null) {
+                sender.sendMessage(enabledMsg)
+            } else {
+                sender.sendMessage("Social spy enabled!")
+            }
         } else {
-            sender.sendMessage(plugin.getFormatService().formatSystemMessage("socialspy-disabled"))
+            val disabledMsg = plugin.formatService.formatSystemMessage("socialspy-disabled")
+            if (disabledMsg != null) {
+                sender.sendMessage(disabledMsg)
+            } else {
+                sender.sendMessage("Social spy disabled!")
+            }
         }
 
         return true

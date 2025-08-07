@@ -1,155 +1,87 @@
-# RemmyChat Configuration
+# Main Configuration
+# Core settings and feature toggles
 
-# Default chat channel
 default-channel: "global"
-
-# Debug settings
-debug:
-  enabled: false # Set to true to enable debug logging
-  format-processing: false # Log details about format processing
-  placeholder-resolution: false # Log details about placeholder resolution
-  group-selection: false # Log details about group selection
-  verbose-startup: false # Set to false to hide startup loading messages
-
-# Custom placeholders that can be used in formats
-placeholders:
-  default-message: "<white>%message%</white>"
-  special-name: "<gradient:gold:yellow>%player_name%</gradient>"
-  owner-prefix: "<red>[OWNER]</red>"
-  owner-hover: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Special hover text!'>%owner-prefix%</hover></click>"
-  admin-prefix: "<red>[ADMIN]</red>"
-  admin-hover: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Hover text for Admins!'>%admin-prefix%</hover></click>"
-  mod-prefix: "<#33FF57>[MOD]</#33FF57>"
-  vip-prefix: "<#FFCC00>[VIP]</#FFCC00>"
-  gray-name: "<gray>%player_name%</gray>"
-  default-format: "%gray-name%: %default-message%"
-  # Message placeholders - these can be used in chat messages when parse-placeholders-in-messages is enabled
-  heart: "<red>❤</red>"
-  star: "<yellow>⭐</yellow>"
-  diamond: "<aqua>💎</aqua>"
-  fire: "<gold>🔥</gold>"
-  laugh: "<yellow>😂</yellow>"
-  thumbs-up: "<green>👍</green>"
-  thinking: "<gray>🤔</gray>"
-  magic: "<light_purple>✨</light_purple>"
-  shrug: "<gray>¯\\_(ツ)_/¯</gray>"
-  gg: "<gradient:green:lime><bold>GG!</bold></gradient>"
-  lol: "<italic><yellow>LOL</yellow></italic>"
-  nice: "<gradient:blue:cyan>Nice!</gradient>"
-  # Example PlaceholderAPI placeholders that players could use if PAPI parsing is enabled:
-  # %player_name% - Player's name
-  # %player_displayname% - Player's display name
-  # %player_world% - Current world name
-  # %vault_eco_balance% - Player's money (requires Vault + economy plugin)
-  # %player_health% - Player's current health
-  # %player_food_level% - Player's hunger level
-  # %server_online% - Number of online players
-  # %player_x%, %player_y%, %player_z% - Player coordinates
-  # Note: Available placeholders depend on installed PlaceholderAPI expansions
-
-# Chat features
-features:
-  format-hover: true
-  clickable-links: true
-  player-formatting: false # Whether players can use MiniMessage formatting
-  use-group-format: true # Whether to use group-based formatting
-  allow-self-messaging: false # Whether players can send messages to themselves
-  parse-placeholders-in-messages: false # Whether to parse custom placeholders in chat messages
-  # When enabled, players can use placeholders like %heart% or %gg% directly in their messages
-  # Example: "Great game! %gg% %heart%" becomes "Great game! GG! ❤"
-  parse-papi-placeholders-in-messages: false # Whether to parse PlaceholderAPI placeholders in chat messages
-  # When enabled, players can use PAPI placeholders like %player_name% or %vault_eco_balance% in messages
-  # Note: This requires PlaceholderAPI to be installed and gives players access to ALL PAPI placeholders
-
-# Chat cooldown in seconds (0 to disable)
 chat-cooldown: 3
 
-# URL formatting options
+debug:
+  enabled: false
+  verbose-startup: false
+  format-processing: false
+  cross-server: false
+  placeholder-resolution: false
+
+features:
+  format-hover: false
+  clickable-links: true
+  player-formatting: false
+  use-group-format: true
+  allow-self-messaging: false
+  parse-placeholders-in-messages: true
+  parse-papi-placeholders-in-messages: false
+
 url-formatting:
   enabled: true
   color: "#3498DB"
   underline: true
   hover-text: "<#AAAAAA>Click to open"
 
-# Templates for reuse across formats
-templates:
-  # Hover templates that can be reused
-  hovers:
-    player-info: "<#778899>Player information\n<#F8F9FA>Name: <#E8E8E8>%player_name%\n<#F8F9FA>Click to message"
-    local-chat: "<#778899>Local Chat\n<#F8F9FA>Range: 100 blocks"
-    staff-chat: "<#778899>Staff Chat\n<#F8F9FA>Private staff communication"
-    trade-chat: "<#778899>Trade Chat\n<#F8F9FA>For buying and selling items"
+config-files:
+  channels: "channels.yml"
+  groups: "groups.yml"
+  templates: "templates.yml"
+  cross-server: "cross-server.yml"
+  database: "database.yml"
+  discord: "discord.yml"
 
-  # Channel prefixes
-  channel-prefixes:
-    local: "<#5BC0DE>[Local]"
-    staff: "<#F5A623>[Staff]"
-    trade: "<#7ED321>[Trade]"
+performance:
+  message-queue-size: 1000
+  batch-processing: true
+  batch-size: 50
+  player-cache-size: 500
+  channel-cache-size: 100
+  cache-cleanup-interval: 300
+  async-processing: true
+  thread-pool-size: 4
 
-  # Name styles that can be applied to usernames
-  name-styles:
-    default: "<#4A90E2>%player_name%"
-    owner: "<bold><gradient:#FF0000:#FFAA00>%player_name%</gradient></bold>"
-    admin: "<italic><color:#CC44FF>%player_name%</color></italic>"
-    mod: "<underlined><color:#33CCFF>%player_name%</underlined>"
-    vip: "<rainbow>%player_name%</rainbow>"
+integrations:
+  placeholder-api: true
+  discord-srv: true
+  vault: true
+  luckperms: true
 
-# Chat message structure - used for final assembly when no custom format is defined
-chat-format: "%channel_prefix% %group_prefix%%name%<#778899>: <#F8F9FA>%message%"
+security:
+  rate-limit:
+    enabled: true
+    messages-per-minute: 30
+    burst-limit: 5
+  spam-protection:
+    enabled: true
+    duplicate-threshold: 3
+    similarity-threshold: 0.8
+  content-filter:
+    enabled: false
+    blocked-words: []
+    replacement-char: "*"
 
-# Channel configurations
-channels:
-  global:
-    permission: "" # Empty means everyone can use
-    radius: -1 # -1 means global chat
-    prefix: "" # No prefix for global
-    hover: "player-info" # References templates.hovers.player-info
-    display-name: "" # No display name for global chat
+maintenance:
+  auto-save-interval: 300
+  cleanup-old-data: true
+  data-retention-days: 30
+  backup-configs: true
 
-  local:
-    permission: "remmychat.channel.local"
-    radius: 100 # Chat radius in blocks
-    prefix: "local" # References templates.channel-prefixes.local
-    hover: "local-chat" # References templates.hovers.local-chat
-    display-name: "<gray>[Local]</gray>" # Display name shown in chat
+legacy:
+  bungeecord-messaging:
+    enabled: false
 
-  staff:
-    permission: "remmychat.channel.staff"
-    radius: -1 # Global chat
-    prefix: "staff" # References templates.channel-prefixes.staff
-    hover: "staff-chat" # References templates.hovers.staff-chat
-    display-name: "<gold>[Staff]</gold>" # Display name shown in chat
+chat-format: "%group_prefix% %player_name%: %message%"
 
-  trade:
-    permission: "remmychat.channel.trade"
-    radius: -1 # Global chat
-    prefix: "trade" # References templates.channel-prefixes.trade
-    hover: "trade-chat" # References templates.hovers.trade-chat
-    display-name: "<green>[Trade]</green>" # Display name shown in chat
-
-# Group-based formatting - can use name styles, prefixes, or completely custom formats
-groups:
-  owner:
-    name-style: "owner"
-    prefix: ""
-    format: "%owner-hover% %special-name%: %default-message%"
-
-  admin:
-    name-style: "admin"
-    prefix: ""
-    format: "%admin-hover% %player_name%: %default-message%"
-
-  mod:
-    name-style: "mod"
-    prefix: ""
-    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'Hover text for Mods!'>%mod-prefix%</hover></click> %player_name%: %default-message%"
-
-  vip:
-    name-style: "vip"
-    prefix: ""
-    format: "<click:suggest_command:'/msg %player_name%'><hover:show_text:'VIP Player'>%vip-prefix%</hover></click> %player_name%: %default-message%"
-
-  default:
-    name-style: "default"
-    prefix: ""
-    format: "%default-format%"
+monitoring:
+  enabled: true
+  statistics-logging: false
+  alerts:
+    enabled: false
+    high-memory-threshold: 0.8
+    slow-query-threshold: 1000
+  metrics-collection-interval: 60
+  statistics-retention-hours: 24
