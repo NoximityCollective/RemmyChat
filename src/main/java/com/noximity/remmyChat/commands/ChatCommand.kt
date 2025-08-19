@@ -214,7 +214,8 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
             sender.sendMessage("§6Discord Integration Status:")
             sender.sendMessage("§7- Plugin: §aDiscordSRV detected")
             sender.sendMessage("§7- Integration: §a" + if (plugin.discordSRVIntegration.isEnabled()) "Enabled" else "Disabled")
-            sender.sendMessage("§7Use '/remmychat discord reload' to reload Discord settings")
+            sender.sendMessage("§7- Channel mappings: §b${plugin.discordSRVIntegration.getChannelMappings().size}")
+            sender.sendMessage("§7Use '/remmychat discord <reload|status|validate|diagnostics|test|configure|fix>' for more options")
             return
         }
 
@@ -235,9 +236,114 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
                 sender.sendMessage("§7- Integration: §a" + if (plugin.discordSRVIntegration.isEnabled()) "Enabled" else "Disabled")
                 val channelCount = plugin.discordSRVIntegration.getChannelMappings().size
                 sender.sendMessage("§7- Channel mappings: §b$channelCount")
+
+                sender.sendMessage("§eChannel Mappings:")
+                plugin.discordSRVIntegration.getChannelMappings().forEach { (remmy, discord) ->
+                    sender.sendMessage("§7  $remmy §8-> §b$discord")
+                }
+            }
+            "validate" -> {
+                sender.sendMessage("§6Validating Discord channels...")
+                val validationResults = plugin.discordSRVIntegration.validateDiscordChannels()
+
+                var validCount = 0
+                var invalidCount = 0
+
+                validationResults.forEach { (remmyChannel, isValid) ->
+                    val discordChannel = plugin.discordSRVIntegration.getChannelMappings()[remmyChannel]
+                    if (isValid) {
+                        sender.sendMessage("§a✅ $remmyChannel -> $discordChannel")
+                        validCount++
+                    } else {
+                        sender.sendMessage("§c❌ $remmyChannel -> $discordChannel")
+                        invalidCount++
+                    }
+                }
+
+                sender.sendMessage("§eValidation Results: §a$validCount valid, §c$invalidCount invalid")
+                if (invalidCount > 0) {
+                    sender.sendMessage("§cPlease check that the Discord channel names in discord.yml match your actual Discord channels")
+                }
+            }
+            "diagnostics" -> {
+                sender.sendMessage("§6Generating Discord diagnostics...")
+                val diagnostics = plugin.discordSRVIntegration.getDiagnosticInfo()
+                diagnostics.split("\n").forEach { line ->
+                    if (line.isNotEmpty()) {
+                        sender.sendMessage("§7$line")
+                    }
+                }
+            }
+            "test" -> {
+                if (args.size < 3) {
+                    sender.sendMessage("§eAvailable channels to test:")
+                    plugin.discordSRVIntegration.getChannelMappings().forEach { (remmy, discord) ->
+                        sender.sendMessage("§7  $remmy §8(§b$discord§8)")
+                    }
+                    sender.sendMessage("§7Usage: /remmychat discord test <channel>")
+                    return
+                }
+
+                val channelToTest = args[2]
+                sender.sendMessage("§6Testing Discord channel: §b$channelToTest")
+
+                val success = plugin.discordSRVIntegration.testChannelMessage(channelToTest)
+                if (success) {
+                    sender.sendMessage("§a✅ Test message sent successfully! Check your Discord server.")
+                } else {
+                    sender.sendMessage("§c❌ Failed to send test message. Check console for details.")
+                    sender.sendMessage("§7Run '/remmychat discord validate' to check channel configuration")
+                }
+            }
+            "configure" -> {
+                sender.sendMessage("§6Generating Discord configuration suggestions...")
+
+                try {
+                    val configHelper = com.noximity.remmyChat.discord.DiscordConfigHelper(plugin)
+                    val validation = configHelper.validateConfiguration()
+
+                    if (validation.isValid) {
+                        sender.sendMessage("§a✅ Discord configuration is valid!")
+                    } else {
+                        sender.sendMessage("§c❌ Discord configuration has issues:")
+                        validation.issues.forEach { issue ->
+                            sender.sendMessage("§c  • $issue")
+                        }
+
+                        if (validation.suggestions.isNotEmpty()) {
+                            sender.sendMessage("§e💡 Suggestions:")
+                            validation.suggestions.forEach { suggestion ->
+                                sender.sendMessage("§e  • $suggestion")
+                            }
+                        }
+
+                        if (validation.warnings.isNotEmpty()) {
+                            sender.sendMessage("§6⚠️  Warnings:")
+                            validation.warnings.forEach { warning ->
+                                sender.sendMessage("§6  • $warning")
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    sender.sendMessage("§cError generating configuration: ${e.message}")
+                }
+            }
+            "fix" -> {
+                sender.sendMessage("§6Generating corrected Discord configuration...")
+
+                try {
+                    val configHelper = com.noximity.remmyChat.discord.DiscordConfigHelper(plugin)
+                    val correctedFile = configHelper.saveCorrectedConfigToFile()
+
+                    sender.sendMessage("§a✅ Corrected configuration saved to: §b${correctedFile.name}")
+                    sender.sendMessage("§eReview the file and replace your discord.yml if satisfied")
+                    sender.sendMessage("§7Then run '/remmychat discord reload' to apply changes")
+                } catch (e: Exception) {
+                    sender.sendMessage("§cError generating corrected configuration: ${e.message}")
+                }
             }
             else -> {
-                sender.sendMessage("§cUsage: /remmychat discord <reload|status>")
+                sender.sendMessage("§cUsage: /remmychat discord <reload|status|validate|diagnostics|test|configure|fix>")
             }
         }
     }
@@ -394,7 +500,7 @@ class ChatCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter
 
                     "discord" -> {
                         if (sender.hasPermission("remmychat.admin")) {
-                            val discordSubcommands = listOf("reload", "status")
+                            val discordSubcommands = listOf("reload", "status", "validate", "diagnostics", "test", "configure", "fix")
                             completions.addAll(discordSubcommands.filter { it.startsWith(input) })
                         }
                     }

@@ -1,0 +1,248 @@
+# Discord Integration
+# Connect Minecraft chat with Discord channels
+
+integration:
+  enabled: false
+  auto-detect: true
+  mode: "bidirectional" # "bidirectional", "minecraft-to-discord", "discord-to-minecraft", "disabled"
+  validate-on-startup: true
+  require-discordsrv: true
+
+bot:
+  presence:
+    enabled: true
+    update-interval: 300
+    activity-type: "playing"
+    activity-message: "with %online_players% players"
+  commands:
+    enabled: false
+    prefix: "!"
+    available-commands:
+      - "players"
+      - "stats"
+      - "help"
+
+channels:
+  global:
+    enabled: true
+    discord-channel: "general"
+    direction: "both"
+
+  staff:
+    enabled: true
+    discord-channel: "staff"
+    direction: "both"
+    allowed-roles:
+      - "Staff"
+      - "Admin"
+      - "Moderator"
+
+  trade:
+    enabled: true
+    discord-channel: "marketplace"
+    direction: "both"
+
+  help:
+    enabled: true
+    discord-channel: "support"
+    direction: "both"
+    auto-ping-staff: true
+    staff-role: "Staff"
+
+  event:
+    enabled: true
+    discord-channel: "announcements"
+    direction: "mc-to-discord"
+
+  admin:
+    enabled: true
+    discord-channel: "admin"
+    direction: "both"
+    allowed-roles:
+      - "Admin"
+      - "Owner"
+
+  local:
+    enabled: false
+    discord-channel: "local"
+    direction: "mc-to-discord"
+
+formatting:
+  minecraft-to-discord:
+    format: "**%player_name%** (%server%): %message%"
+    channel-formats:
+      global: "**%player_name%**: %message%"
+      staff: "**[Staff]** %player_name%: %message%"
+      admin: "**[Admin]** %player_name%: %message%"
+      trade: "**[Trade]** %player_name%: %message%"
+      help: "**[Help]** %player_name%: %message%"
+      event: "📢 **[Event]** %message%"
+    show-server-name: true
+    server-format: "**[%server%]** %player_name%: %message%"
+    embeds:
+      enabled: false
+      color: "#5BC0DE"
+      include-avatar: true
+      include-timestamp: true
+
+  discord-to-minecraft:
+    format: "<blue>[Discord]</blue> <gray>%username%</gray>: %message%"
+    channel-formats:
+      general: "<blue>[Discord]</blue> <gray>%username%</gray>: %message%"
+      staff: "<gold>[Discord-Staff]</gold> <yellow>%username%</yellow>: %message%"
+      admin: "<red>[Discord-Admin]</red> <red>%username%</red>: %message%"
+      marketplace: "<green>[Discord-Trade]</green> <gray>%username%</gray>: %message%"
+      support: "<aqua>[Discord-Help]</aqua> <gray>%username%</gray>: %message%"
+    role-formats:
+      "Admin": "<red>[Discord-Admin]</red> <red>%username%</red>: %message%"
+      "Staff": "<gold>[Discord-Staff]</gold> <yellow>%username%</yellow>: %message%"
+      "VIP": "<yellow>[Discord-VIP]</yellow> <gray>%username%</gray>: %message%"
+
+content:
+  processing:
+    strip-minecraft-formatting: true
+    strip-discord-formatting: false
+    convert-emojis: true
+    process-mentions: true
+  filtering:
+    filter-bots: true
+    filter-webhooks: false
+    filter-system-messages: true
+    blocked-patterns: []
+    max-length:
+      minecraft-to-discord: 2000
+      discord-to-minecraft: 256
+  links:
+    allow-discord-links: false
+    allow-minecraft-links: true
+    convert-discord-invites: true
+
+events:
+  join-leave:
+    enabled: true
+    send-to-discord: true
+    discord-channel: "general"
+    formats:
+      join: "📥 **%player_name%** joined the server!"
+      leave: "📤 **%player_name%** left the server."
+      first-join: "🎉 **%player_name%** joined for the first time! Welcome!"
+    cross-server:
+      enabled: true
+      formats:
+        join: "📥 **%player_name%** joined **%server%**!"
+        leave: "📤 **%player_name%** left **%server%**."
+        switch: "🔄 **%player_name%** moved from **%from_server%** to **%to_server%**"
+
+  death:
+    enabled: true
+    send-to-discord: true
+    discord-channel: "general"
+    format: "💀 **%player_name%** %death_message%"
+
+  achievements:
+    enabled: true
+    send-to-discord: true
+    discord-channel: "general"
+    format: "🏆 **%player_name%** earned the achievement **%achievement%**!"
+
+  chat-events:
+    first-daily-message:
+      enabled: false
+      format: "🌅 **%player_name%** sent their first message today!"
+    milestone-messages:
+      enabled: false
+      milestones: [100, 500, 1000, 5000, 10000]
+      format: "🎯 **%player_name%** sent their %milestone%th message!"
+
+advanced:
+  webhooks:
+    enabled: false
+    use-player-avatars: true
+    avatar-service: "crafatar"
+    channels: {}
+
+  cross-server:
+    enabled: true
+    show-server-origin: true
+    consolidate-servers: false
+    server-channels:
+      enabled: false
+      channel-format: "mc-%server%"
+
+  role-sync:
+    enabled: false
+    sync-groups-to-roles: false
+    group-mappings: {}
+
+  statistics:
+    enabled: false
+    periodic-stats: false
+    stats-channel: "bot-commands"
+    stats-interval: 3600
+    stats-format: |
+      📊 **Server Statistics**
+      🟢 Online: %online_players%
+      📈 Peak: %peak_players%
+      💬 Messages: %total_messages%
+      🕐 Uptime: %uptime%
+
+moderation:
+  enabled: false
+  alerts:
+    enabled: false
+    alert-channel: "mod-alerts"
+    actions:
+      mute: true
+      kick: true
+      ban: true
+      warn: true
+    format: "⚠️ **%action%** | **%player%** | **%reason%** | By: **%moderator%**"
+  chat-violations:
+    enabled: false
+    log-channel: "chat-logs"
+    violations:
+      spam: true
+      inappropriate-language: true
+      caps-lock: true
+    format: "🚨 **%violation%** by **%player%** in **%channel%**: %message%"
+
+performance:
+  queue:
+    enabled: true
+    max-size: 1000
+    batch-size: 10
+    process-interval: 100
+  rate-limiting:
+    enabled: true
+    max-messages-per-minute: 30
+    burst-limit: 5
+  caching:
+    cache-users: true
+    cache-duration: 300
+    max-cache-size: 500
+  error-handling:
+    retry-failed: true
+    max-retries: 3
+    retry-delay: 1000
+    fallback-to-console: true
+
+debug:
+  enabled: false
+  debug-options:
+    message-sending: false
+    message-receiving: false
+    channel-mapping: false
+    formatting: false
+    webhooks: false
+  log-api-calls: false
+  test-mode: false
+
+security:
+  validation:
+    validate-messages: true
+    max-message-age: 30
+  content-security:
+    block-patterns: []
+    sanitize-input: true
+    remove-mentions: false
+    remove-links: false

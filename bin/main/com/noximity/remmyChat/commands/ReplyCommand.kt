@@ -6,9 +6,10 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class ReplyCommand(private val plugin: RemmyChat) : CommandExecutor {
+class ReplyCommand(private val plugin: RemmyChat) : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
             val errorMsg = plugin.formatService.formatSystemMessage("error.players-only")
@@ -116,5 +117,16 @@ class ReplyCommand(private val plugin: RemmyChat) : CommandExecutor {
         chatUser.lastMessagedPlayer = target.uniqueId
 
         return true
+    }
+
+    override fun onTabComplete(
+        sender: CommandSender,
+        command: Command,
+        alias: String,
+        args: Array<String>
+    ): MutableList<String> {
+        // Reply command doesn't need tab completion for arguments
+        // since it just takes the message text
+        return mutableListOf()
     }
 }

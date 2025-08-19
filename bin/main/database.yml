@@ -1,0 +1,282 @@
+# Database Configuration
+# Connection settings and data management
+
+primary:
+  type: "mysql"
+  connection:
+    host: "localhost"
+    port: 3306
+    database: "remmychat"
+    username: "remmychat"
+    password: "your_secure_password"
+    properties:
+      useSSL: false
+      allowPublicKeyRetrieval: true
+      serverTimezone: "UTC"
+      characterEncoding: "utf8mb4"
+      useUnicode: true
+
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+    connection-test-query: "SELECT 1"
+
+  tables:
+    prefix: "rc_"
+    users: "users"
+    user_preferences: "user_preferences"
+    user_channels: "user_channels"
+    channel_members: "channel_members"
+    message_history: "message_history"
+    muted_players: "muted_players"
+    ignored_players: "ignored_players"
+    social_spy: "social_spy"
+    network_messages: "network_messages"
+    network_servers: "network_servers"
+    network_player_sync: "network_player_sync"
+    punishments: "punishments"
+    reports: "reports"
+    statistics: "statistics"
+
+sqlite:
+  enabled: false
+  file: "remmychat.db"
+  settings:
+    journal-mode: "WAL"
+    synchronous: "NORMAL"
+    cache-size: 2000
+    temp-store: "MEMORY"
+  pool:
+    maximum-pool-size: 3
+    connection-timeout: 30000
+
+sync:
+  enabled: true
+  player-data:
+    sync-items:
+      channel-preferences: true
+      message-settings: true
+      muted-players: true
+      ignored-players: true
+      social-spy: true
+      last-seen: true
+      playtime: false
+      statistics: false
+    frequency:
+      interval: 60
+      immediate-sync:
+        channel-change: true
+        message-toggle: true
+        mute-action: true
+        login: true
+        logout: true
+    conflict-resolution:
+      strategy: "last-write-wins"
+      conflict-window: 30
+
+  channel-data:
+    member-lists: false
+    topics: true
+    permissions: false
+
+  message-history:
+    enabled: true
+    retention-days: 30
+    max-messages-per-channel: 10000
+    compression: true
+
+caching:
+  enabled: true
+  cache-types:
+    user-data:
+      enabled: true
+      ttl: 300
+      max-size: 1000
+    channel-data:
+      enabled: true
+      ttl: 600
+      max-size: 200
+    permissions:
+      enabled: true
+      ttl: 300
+      max-size: 500
+    player-lookup:
+      enabled: true
+      ttl: 3600
+      max-size: 2000
+  cleanup:
+    interval: 300
+    memory-threshold: 80
+
+maintenance:
+  enabled: true
+  cleanup:
+    old-messages:
+      enabled: true
+      max-age: 30
+      interval: 24
+    offline-players:
+      enabled: true
+      max-offline: 90
+      clean-items:
+        - "message_history"
+        - "temporary_data"
+      preserve:
+        - "user_preferences"
+        - "muted_players"
+    temp-data:
+      enabled: true
+      interval: 6
+  optimization:
+    analyze-tables:
+      enabled: true
+      interval: 168
+    rebuild-indexes:
+      enabled: true
+      interval: 720
+    vacuum:
+      enabled: true
+      interval: 720
+
+backup:
+  enabled: true
+  schedule:
+    full-backup: 24
+    incremental-backup: 6
+  location:
+    local-path: "backups/"
+    remote:
+      enabled: false
+      type: "ftp"
+      host: "backup.example.com"
+      username: "backup_user"
+      password: "backup_password"
+      path: "/remmychat_backups/"
+  retention:
+    daily: 7
+    weekly: 4
+    monthly: 12
+  compression:
+    enabled: true
+    format: "gzip"
+  include:
+    - "user_data"
+    - "channel_data"
+    - "message_history"
+    - "configuration"
+  exclude:
+    - "temporary_data"
+    - "cache_data"
+    - "statistics"
+
+migration:
+  auto-migrate: true
+  backup-before-migrate: true
+  timeout: 300
+  detailed-logging: true
+
+performance:
+  queries:
+    prepared-statements: true
+    batch-operations: true
+    max-batch-size: 100
+  connections:
+    test-on-borrow: true
+    test-while-idle: true
+    test-interval: 30
+  memory:
+    fetch-size: 1000
+    stream-results: true
+  indexes:
+    auto-suggest: true
+    log-slow-queries: true
+    slow-query-threshold: 2.0
+
+security:
+  encryption:
+    enabled: false
+    algorithm: "AES-256"
+    key: ""
+  connection-security:
+    ssl: false
+    ssl-verify: true
+    ssl-cert-path: ""
+  access-control:
+    ip-whitelist: []
+    user-permissions:
+      required:
+        - "SELECT"
+        - "INSERT"
+        - "UPDATE"
+        - "DELETE"
+        - "CREATE"
+        - "INDEX"
+  audit:
+    enabled: false
+    log-operations: false
+    log-sensitive: true
+    retention: 30
+
+monitoring:
+  enabled: true
+  metrics:
+    connection-pool: true
+    query-performance: true
+    cache-performance: true
+    database-size: true
+  health-checks:
+    enabled: true
+    interval: 60
+    timeout: 10
+  alerts:
+    connection-pool-exhausted: true
+    slow-queries: true
+    database-unreachable: true
+    low-disk-space: true
+    thresholds:
+      slow-query-time: 5.0
+      connection-pool-usage: 80
+      disk-usage: 90
+
+development:
+  dev-mode: false
+  debug:
+    log-queries: false
+    log-parameters: false
+    log-connections: false
+  test-data:
+    auto-populate: false
+    datasets:
+      - "sample_users"
+      - "sample_channels"
+      - "sample_messages"
+  reset:
+    allow-reset: false
+    require-confirmation: true
+
+schema:
+  version: "2.0.0"
+  updates:
+    check-on-startup: true
+    auto-apply: true
+    backup-before-update: true
+  custom:
+    allow-custom-tables: false
+    custom-prefix: "custom_"
+
+error-handling:
+  connection-errors:
+    retry-attempts: 3
+    retry-delay: 5
+    exponential-backoff: true
+  transactions:
+    timeout: 30
+    retry-failed: true
+    max-retries: 3
+  deadlocks:
+    auto-retry: true
+    max-retries: 5
+    retry-delay: 100

@@ -23,9 +23,17 @@ import com.noximity.remmyChat.security.SecurityManager
 import com.noximity.remmyChat.monitoring.PerformanceMonitor
 import com.noximity.remmyChat.maintenance.MaintenanceManager
 import com.noximity.remmyChat.discord.AdvancedDiscordIntegration
+import com.noximity.remmyChat.discord.DiscordConfigHelper
 import com.noximity.remmyChat.templates.AdvancedTemplateProcessor
 import com.noximity.remmyChat.moderation.ModerationManager
 import com.noximity.remmyChat.listeners.EnhancedChatListener
+import com.noximity.remmyChat.features.TradeChannelHandler
+import com.noximity.remmyChat.features.HelpChannelHandler
+import com.noximity.remmyChat.features.GroupBehaviorManager
+import com.noximity.remmyChat.features.AdvancedDiscordFeatures
+import com.noximity.remmyChat.features.DatabaseSecurityManager
+import com.noximity.remmyChat.features.EventChannelHandler
+import com.noximity.remmyChat.features.FeatureManager
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
@@ -76,6 +84,22 @@ class RemmyChat : JavaPlugin() {
     lateinit var reloadService: ReloadService
         private set
 
+    // New feature handlers
+    lateinit var tradeChannelHandler: TradeChannelHandler
+        private set
+    lateinit var helpChannelHandler: HelpChannelHandler
+        private set
+    lateinit var groupBehaviorManager: GroupBehaviorManager
+        private set
+    lateinit var advancedDiscordFeatures: AdvancedDiscordFeatures
+        private set
+    lateinit var databaseSecurityManager: DatabaseSecurityManager
+        private set
+    lateinit var eventChannelHandler: EventChannelHandler
+        private set
+    lateinit var featureManager: FeatureManager
+        private set
+
     var isProtocolLibEnabled: Boolean = false
         private set
     var isDiscordSRVEnabled: Boolean = false
@@ -124,6 +148,15 @@ class RemmyChat : JavaPlugin() {
         this.advancedTemplateProcessor = AdvancedTemplateProcessor(this)
         this.moderationManager = ModerationManager(this)
 
+        // Initialize new feature handlers
+        this.tradeChannelHandler = TradeChannelHandler(this)
+        this.helpChannelHandler = HelpChannelHandler(this)
+        this.groupBehaviorManager = GroupBehaviorManager(this)
+        this.advancedDiscordFeatures = AdvancedDiscordFeatures(this)
+        this.databaseSecurityManager = DatabaseSecurityManager(this)
+        this.eventChannelHandler = EventChannelHandler(this)
+        this.featureManager = FeatureManager(this)
+
         this.formatService = FormatService(this)
         this.chatService = ChatService(this)
         this.placeholderManager = PlaceholderManager(this)
@@ -146,6 +179,17 @@ class RemmyChat : JavaPlugin() {
         this.maintenanceManager.initialize()
         this.advancedTemplateProcessor.initialize()
         this.moderationManager.initialize()
+
+        // Initialize new feature handlers
+        this.tradeChannelHandler.initialize()
+        this.helpChannelHandler.initialize()
+        this.groupBehaviorManager.initialize()
+        this.advancedDiscordFeatures.initialize()
+        this.databaseSecurityManager.initialize()
+        this.eventChannelHandler.initialize()
+
+        // Initialize feature manager last to coordinate all features
+        this.featureManager.initialize()
 
         // ProtocolLib detection
         if (server.pluginManager.getPlugin("ProtocolLib") != null) {
@@ -202,6 +246,11 @@ class RemmyChat : JavaPlugin() {
 
     override fun onDisable() {
         logger.info("Shutting down RemmyChat...")
+
+        // Shutdown feature manager first to coordinate all feature shutdowns
+        if (::featureManager.isInitialized) {
+            featureManager.shutdown()
+        }
 
         // Shutdown advanced features first
         if (::maintenanceManager.isInitialized) {
@@ -550,6 +599,11 @@ class RemmyChat : JavaPlugin() {
                                 Commands.argument("discord_subcommand", StringArgumentType.word())
                                     .suggests(chatCommand)
                                     .executes(chatCommand) // /remmychat discord <subcommand>
+                                    .then(
+                                        Commands.argument("test_target", StringArgumentType.word())
+                                            .suggests(chatCommand)
+                                            .executes(chatCommand) // /remmychat discord test <channel>
+                                    )
                             )
                             .then(
                                 Commands.argument("reload_component", StringArgumentType.word())
@@ -573,6 +627,11 @@ class RemmyChat : JavaPlugin() {
             val channelCommandFallback = ChannelCommand(this)
             getCommand("ch")?.setExecutor(channelCommandFallback)
             getCommand("ch")?.tabCompleter = channelCommandFallback
+
+            // Register features command
+            val featuresCommand = com.noximity.remmyChat.commands.FeaturesCommand(this)
+            getCommand("remmychat")?.setExecutor(featuresCommand)
+            getCommand("remmychat")?.tabCompleter = featuresCommand
 
             debugLog("Fallback commands registered successfully")
         } catch (e: Exception) {

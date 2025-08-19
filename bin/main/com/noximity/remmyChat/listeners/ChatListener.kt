@@ -1,9 +1,12 @@
 package com.noximity.remmyChat.listeners
 
 import com.noximity.remmyChat.RemmyChat
+import com.noximity.remmyChat.compatibility.VersionCompatibility
+import com.noximity.remmyChat.events.RemmyChatMessageEvent
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -89,6 +92,11 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
         val plainMessage = PlainTextComponentSerializer.plainText().serialize(formattedMessage)
         plugin.logger.info(plainMessage)
 
+        // Fire RemmyChatMessageEvent for integrations (like DiscordSRV) - must be synchronous
+        val remmyChatEvent = RemmyChatMessageEvent(player, currentChannel.name ?: "global", rawMessage, formattedMessage)
+        VersionCompatibility.safeFireEvent(plugin, remmyChatEvent)
+
+        // Send to local server players
         if (currentChannel.radius > 0) {
             // Local channel with radius
             for (recipient in plugin.server.onlinePlayers) {
@@ -99,7 +107,7 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
                 }
             }
         } else {
-            // Global channel - send to all players in the same channel
+            // Global channel - send to all players in the same channel on this server
             for (recipient in plugin.server.onlinePlayers) {
                 val recipientUser = plugin.chatService.getChatUser(recipient.uniqueId)
                 if (recipientUser?.currentChannel == currentChannel.name) {
@@ -107,6 +115,8 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
                 }
             }
         }
+
+
     }
 
     @EventHandler
@@ -114,6 +124,8 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
         val player = event.player
         // This will now load the saved channel from the database
         plugin.chatService.createChatUser(player.uniqueId)
+
+
     }
 
     @EventHandler
@@ -123,6 +135,8 @@ class ChatListener(private val plugin: RemmyChat) : Listener {
         val user = plugin.chatService.getChatUser(player.uniqueId)
         if (user != null) {
             plugin.databaseManager.saveUserPreferences(user)
+
+
         }
         plugin.chatService.removeChatUser(player.uniqueId)
         cooldowns.remove(player.uniqueId)

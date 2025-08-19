@@ -1,6 +1,7 @@
 package com.noximity.remmyChat.services
 
 import com.noximity.remmyChat.RemmyChat
+import com.noximity.remmyChat.compatibility.VersionCompatibility
 import me.clip.placeholderapi.PlaceholderAPI
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
@@ -26,13 +27,36 @@ class FormatService(private val plugin: RemmyChat) {
         this.miniMessage = MiniMessage.miniMessage()
     }
 
+    /**
+     * Format a system message from the messages.yml file
+     */
+    fun formatSystemMessage(key: String, vararg placeholders: TagResolver): Component? {
+        val message = plugin.messages.getMessage(key) ?: return null
+        return miniMessage.deserialize(message, *placeholders)
+    }
+
+    /**
+     * Format a system message from the messages.yml file with simple string replacement
+     */
+    fun formatSystemMessage(key: String): Component? {
+        val message = plugin.messages.getMessage(key) ?: return null
+        return miniMessage.deserialize(message)
+    }
+
+    /**
+     * Format a message string into a Component
+     */
+    fun formatMessage(message: String): Component {
+        return miniMessage.deserialize(message)
+    }
+
     fun formatChatMessage(
         player: Player,
         channelName: String?,
         message: String
     ): Component {
         val playerName = player.name
-        val displayName = player.name
+        val displayName = VersionCompatibility.getPlayerDisplayName(player)
         val messageComponent = formatMessageContent(player, message)
 
         // Debug settings
@@ -60,6 +84,50 @@ class FormatService(private val plugin: RemmyChat) {
         val channelPrefixRef = channel?.prefix
         var channelPrefix = ""
 
+        // Check if channel has a custom format first
+        if (channel != null && channel.format.isNotEmpty() && channel.format != "%player_display_name% <dark_gray>»</dark_gray> %message%") {
+            // Use channel-specific format
+            var channelFormat = channel.format
+
+            if (debugFormatProcessing) {
+                plugin.debugLog("Using channel-specific format for channel '${channel.name}': $channelFormat")
+            }
+
+            // Replace basic placeholders
+            channelFormat = channelFormat.replace("%player_name%", playerName)
+            channelFormat = channelFormat.replace("%player_display_name%", displayName)
+            channelFormat = channelFormat.replace("%display_name%", displayName)
+
+            // Apply custom placeholders
+            channelFormat = plugin.placeholderManager.applyCustomPlaceholders(channelFormat)
+
+            // Handle default-message template
+            channelFormat = channelFormat.replace("%default-message%", "<white>%message%</white>")
+
+            // Apply all placeholders
+            channelFormat = plugin.placeholderManager.applyAllPlaceholders(player, channelFormat)
+
+            // Replace %message% with component placeholder
+            channelFormat = channelFormat.replace("%message%", "<message>")
+
+            try {
+                return miniMessage.deserialize(
+                    channelFormat,
+                    TagResolver.builder()
+                        .resolver(
+                            Placeholder.component("message", messageComponent)
+                        )
+                        .build()
+                )
+            } catch (e: Exception) {
+                plugin.logger.warning("Error formatting channel message: ${e.message}")
+                if (debugFormatProcessing) {
+                    plugin.logger.warning("Failed channel format: $channelFormat")
+                }
+                // Fall through to group/default formatting
+            }
+        }
+
         // If using group formats with LuckPerms
         if (plugin.configManager.isUseGroupFormat &&
             plugin.permissionService.isLuckPermsHooked
@@ -78,30 +146,46 @@ class FormatService(private val plugin: RemmyChat) {
                                 groupFormat.name
                     )
                     plugin.debugLog(
-                        "Format string: " + groupFormat.format
+                        "Format string: " + groupFormat.chatFormat
                     )
                 } else {
                     plugin.debugLog(
                         "No group format found for player " + playerName
                     )
+                    plugin.debugLog(
+                        "LuckPerms hooked: " + plugin.permissionService.isLuckPermsHooked
+                    )
+                    plugin.debugLog(
+                        "Use group format enabled: " + plugin.configManager.isUseGroupFormat
+                    )
                 }
             }
 
             // If we have a custom format for this group, use it directly
-            if (groupFormat != null && groupFormat.format?.isNotEmpty() == true) {
+            if (groupFormat != null && groupFormat.chatFormat.isNotEmpty()) {
                 // Process custom format with our placeholders system
-                var customFormat = groupFormat.format ?: ""
+                var customFormat = groupFormat.chatFormat
 
                 if (debugFormatProcessing) {
                     plugin.debugLog("Original format: " + customFormat)
+                    plugin.debugLog("Group name: " + groupFormat.name)
+                    plugin.debugLog("Group prefix: '" + groupFormat.prefix + "'")
+                    plugin.debugLog("Group name-style: '" + groupFormat.nameStyle + "'")
                 }
 
-                // Important: First apply custom placeholders
-                customFormat = plugin.placeholderManager.applyCustomPlaceholders(customFormat)
+                // First handle group-specific placeholders
+                customFormat = customFormat.replace("%prefix%", groupFormat.prefix)
+                customFormat = customFormat.replace("%suffix%", groupFormat.suffix)
+
+                // Process the name-style placeholder
+                var nameStyleFormatted = groupFormat.nameStyle
+                nameStyleFormatted = nameStyleFormatted.replace("%player_name%", playerName)
+                nameStyleFormatted = nameStyleFormatted.replace("%display_name%", displayName)
+                customFormat = customFormat.replace("%name-style%", nameStyleFormatted)
 
                 if (debugFormatProcessing) {
                     plugin.debugLog(
-                        "After custom placeholder processing: " + customFormat
+                        "After group placeholder processing: " + customFormat
                     )
                 }
 
@@ -124,6 +208,15 @@ class FormatService(private val plugin: RemmyChat) {
                     channelDisplayName.trim { it <= ' ' }
                 )
 
+                // Apply custom placeholders after group placeholders
+                customFormat = plugin.placeholderManager.applyCustomPlaceholders(customFormat)
+
+                if (debugFormatProcessing) {
+                    plugin.debugLog(
+                        "After custom placeholder processing: " + customFormat
+                    )
+                }
+
                 // Replace %message% with component placeholder - must be done after other placeholder processing
                 // but before MiniMessage deserialization
                 customFormat = customFormat.replace("%message%", "<message>")
@@ -135,8 +228,15 @@ class FormatService(private val plugin: RemmyChat) {
                 }
 
                 // Apply PAPI placeholders if available
-                if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
-                    customFormat = PlaceholderAPI.setPlaceholders(player, customFormat)
+                try {
+                    if (plugin.server.pluginManager.getPlugin("PlaceholderAPI") != null) {
+                        customFormat = PlaceholderAPI.setPlaceholders(player, customFormat)
+                    }
+                } catch (e: NoClassDefFoundError) {
+                    // PlaceholderAPI classes not available, skip PAPI processing
+                } catch (e: Exception) {
+                    // Other PlaceholderAPI error, skip PAPI processing
+                    plugin.logger.warning("Error applying PlaceholderAPI placeholders: ${e.message}")
                 }
 
                 try {
@@ -170,6 +270,13 @@ class FormatService(private val plugin: RemmyChat) {
             if (groupFormat != null) {
                 nameStyle = groupFormat.nameStyle ?: "default"
                 groupPrefixRef = groupFormat.prefix ?: ""
+                if (debugFormatProcessing) {
+                    plugin.debugLog("Using fallback system with group format: " + groupFormat.name)
+                }
+            } else {
+                if (debugFormatProcessing) {
+                    plugin.debugLog("Using fallback system with no group format")
+                }
             }
 
             val formattedName: String = plugin.configManager
@@ -191,7 +298,7 @@ class FormatService(private val plugin: RemmyChat) {
                 }
             }
 
-            var hoverText = plugin.configManager.getHoverTemplate(channel?.hover ?: "player-info")
+            var hoverText = plugin.configManager.getHoverTemplate(channel?.hoverTemplate ?: "player-info")
             if (hoverText.isEmpty()) {
                 hoverText = plugin.configManager.getHoverTemplate("player-info")
             }
@@ -203,7 +310,7 @@ class FormatService(private val plugin: RemmyChat) {
             val chatFormat = plugin.configManager.chatFormat ?: "%channel_prefix% %group_prefix%%name%: %message%"
             var messageFormat: String
 
-            if (plugin.configManager.isFormatHoverEnabled &&
+            if (plugin.configManager.isFormatHoverEnabled() &&
                 hoverText.isNotEmpty()
             ) {
                 val nameWithHover =
@@ -232,6 +339,9 @@ class FormatService(private val plugin: RemmyChat) {
                 messageFormat = channelDisplayName + messageFormat
             }
 
+            // Handle default-message template first before processing other placeholders
+            messageFormat = messageFormat.replace("%default-message%", "<white>%message%</white>")
+
             // Process all custom placeholders in the final message format
             messageFormat = plugin.placeholderManager.applyAllPlaceholders(player, messageFormat)
 
@@ -240,6 +350,8 @@ class FormatService(private val plugin: RemmyChat) {
                 "%channel_name%",
                 channelDisplayName.trim { it <= ' ' }
             )
+
+
 
             try {
                 return miniMessage.deserialize(
@@ -271,7 +383,7 @@ class FormatService(private val plugin: RemmyChat) {
             }
         }
 
-        var hoverText = plugin.configManager.getHoverTemplate(channel?.hover ?: "player-info")
+        var hoverText = plugin.configManager.getHoverTemplate(channel?.hoverTemplate ?: "player-info")
         if (hoverText.isEmpty()) {
             hoverText = plugin.configManager.getHoverTemplate("player-info")
         }
@@ -283,7 +395,7 @@ class FormatService(private val plugin: RemmyChat) {
         val chatFormat = plugin.configManager.chatFormat ?: "%channel_prefix% %group_prefix%%name%: %message%"
         var messageFormat: String
 
-        if (plugin.configManager.isFormatHoverEnabled &&
+        if (plugin.configManager.isFormatHoverEnabled() &&
             hoverText.isNotEmpty()
         ) {
             val nameWithHover =
@@ -312,6 +424,9 @@ class FormatService(private val plugin: RemmyChat) {
             messageFormat = channelDisplayName + messageFormat
         }
 
+        // Handle default-message template first before processing other placeholders
+        messageFormat = messageFormat.replace("%default-message%", "<white>%message%</white>")
+
         // Process all custom placeholders in the final message format
         messageFormat = plugin.placeholderManager.applyAllPlaceholders(player, messageFormat)
 
@@ -320,6 +435,8 @@ class FormatService(private val plugin: RemmyChat) {
             "%channel_name%",
             channelDisplayName.trim { it <= ' ' }
         )
+
+
 
         try {
             return miniMessage.deserialize(
@@ -433,11 +550,8 @@ class FormatService(private val plugin: RemmyChat) {
             urlBuilder.decoration(TextDecoration.UNDERLINED, true)
         }
 
-        if (plugin.config.getBoolean("url-formatting.hover", true)) {
-            val hoverText: String = plugin.config.getString(
-                "url-formatting.hover-text",
-                "<#AAAAAA>Click to open"
-            ) ?: "<#AAAAAA>Click to open"
+        if (plugin.configManager.isUrlFormattingEnabled() && plugin.config.getBoolean("url-formatting.hover", true)) {
+            val hoverText: String = plugin.configManager.getUrlHoverText()
             val hoverComponent = miniMessage.deserialize(hoverText)
             urlBuilder.hoverEvent(HoverEvent.showText(hoverComponent))
         }
@@ -456,7 +570,7 @@ class FormatService(private val plugin: RemmyChat) {
         return miniMessage.deserialize(processedText)
     }
 
-    fun formatSystemMessage(
+    fun formatSystemMessageFromPath(
         path: String?,
         vararg placeholders: TagResolver
     ): Component? {
